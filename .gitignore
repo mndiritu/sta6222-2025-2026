@@ -1,0 +1,36 @@
+# R
+.Rhistory
+.RData
+.Rproj.user/
+.Ruserdata
+*.Rproj
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+.envrc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data (large or sensitive) – keep only small teaching data
+data/*.csv
+data/*.rds
+data/*.rda
+data/*.RData
+
+# Logs
+*.log
