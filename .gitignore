@@ -3,7 +3,7 @@
 .RData
 .Rproj.user/
 .Ruserdata
-*.Rproj
+#*.Rproj
 
 # Python
 __pycache__/
