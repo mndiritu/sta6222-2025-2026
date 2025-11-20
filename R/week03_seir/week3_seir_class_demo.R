@@ -12,7 +12,7 @@
 # -------------------------------------------------------------
 
 # Load dataset
-df <- read.csv("week3_seir_simulations.csv")   # Replace with: "data/week3_seir_simulations.csv"
+df <- read.csv("data/week3_seir_simulations.csv")   # Replace with: "data/week3_seir_simulations.csv"
 
 # Examine structure
 head(df)

@@ -27,9 +27,9 @@ Thumbs.db
 *.swo
 
 # Data (large or sensitive) – keep only small teaching data
-data/*.csv
-data/*.rds
-data/*.rda
+#data/*.csv
+#data/*.rds
+#data/*.rda
 data/*.RData
 
 # Logs
