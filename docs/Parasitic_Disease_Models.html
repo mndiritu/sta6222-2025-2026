@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parasitic Disease Models: Micro vs Macro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fdfbf7; color: #1e293b; }
+        h1, h2, h3, h4 { font-family: 'Merriweather', serif; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .slide-active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        .slide-hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .math-block { overflow-x: auto; padding: 1rem; background-color: #f1f5f9; border-radius: 0.5rem; margin-top: 1rem; margin-bottom: 1rem; }
+    </style>
+    <!-- Chosen Palette: Academic Earth & Sky - Warm neutral background (#fdfbf7), Slate text (#1e293b), Deep Blue for Micro (#1e40af), Earthy Green for Macro (#15803d), and Amber for highlights. -->
+    <!-- Application Structure Plan: The app is designed as an interactive 'Lecture Companion'. It follows a linear narrative flow but uses a 'Split Path' pattern to distinguish the two paradigms. 1. Hero Section: Sets context. 2. The Great Divide: A comparative interactive dashboard. 3. Deep Dive Micro: Visualizing binary states. 4. Deep Dive Macro: Interactive Anderson-May simulation (allowing users to play with R0 parameters) and Aggregation visualization (understanding the 80/20 rule). 5. Self-Assessment: Interactive quiz to reinforce learning. This structure moves from concept -> comparison -> mechanical understanding -> testing. -->
+    <!-- Visualization & Content Choices: 
+        1. Radar Chart: To visually compare the qualitative attributes (Immunity, Generation Time, Math Complexity) of Micro vs Macro parasites. Goal: Inform/Compare.
+        2. Line Chart (Interactive): To simulate the Anderson-May model (Worm Burden over time). Users adjust sliders for lambda, k, mu, delta. Goal: Change/Relationship. Shows how parameters drive the trajectory (Growth vs Decay).
+        3. Bar Chart: To demonstrate Overdispersion (Negative Binomial vs Poisson). Goal: Inform/Compare. Helps visualize the 'Wormy People' concept.
+        4. Text/Math Blocks: Rendered LaTeX for rigorous definitions.
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased selection:bg-amber-100 selection:text-amber-900">
+
+    <!-- Navigation / Progress -->
+    <nav class="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-sm z-50 border-b border-slate-200">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="text-sm font-bold text-slate-800 tracking-wide">STA 6222 <span class="text-slate-400 mx-2">|</span> Week 5</div>
+            <div class="hidden md:flex space-x-6 text-sm font-medium text-slate-600">
+                <button onclick="scrollToSection('intro')" class="hover:text-amber-700 transition">Context</button>
+                <button onclick="scrollToSection('compare')" class="hover:text-amber-700 transition">Comparison</button>
+                <button onclick="scrollToSection('micro')" class="hover:text-blue-700 transition">Micro-Parasites</button>
+                <button onclick="scrollToSection('macro')" class="hover:text-green-700 transition">Macro-Parasites</button>
+                <button onclick="scrollToSection('quiz')" class="hover:text-amber-700 transition">Quiz</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl mx-auto px-4 pt-24 pb-20 space-y-16">
+
+        <!-- Header Section -->
+        <header id="intro" class="text-center space-y-6 animate-fade-in">
+            <div class="inline-block bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-2">Study Guide Companion</div>
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">Micro vs. Macro Parasitic Models</h1>
+            <p class="text-xl text-slate-600 max-w-2xl mx-auto font-light">
+                Why treating a worm like a virus leads to wrong predictions. An interactive guide to breaking the abstraction of "Infection".
+            </p>
+            <div class="flex justify-center gap-4 text-sm text-slate-500">
+                <span>Dr. Moses Ndiritu</span>
+                <span>•</span>
+                <span>Disease Transmission & Management</span>
+            </div>
+        </header>
+
+        <!-- Context Card -->
+        <section class="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4 border-l-4 border-amber-500 pl-4">Breaking the Abstraction</h2>
+            <p class="text-slate-700 leading-relaxed mb-6">
+                In previous weeks, we treated "Infection" as a generic state ($I$). Biology was abstracted into $\beta$ and $\gamma$. However, biology dictates mathematical structure. We must categorize pathogens into two distinct classes: <strong>Micro-parasites</strong> (Viruses, Bacteria) and <strong>Macro-parasites</strong> (Helminths). Applying the wrong model (e.g., SIR for Hookworm) leads to failed public health policies.
+            </p>
+            <div class="grid md:grid-cols-2 gap-6 mt-8">
+                <div class="bg-blue-50 p-6 rounded-xl border border-blue-100 hover:shadow-md transition cursor-pointer group" onclick="scrollToSection('micro')">
+                    <h3 class="text-lg font-bold text-blue-900 mb-2 flex items-center">
+                        <span class="text-2xl mr-2">🦠</span> Micro-Parasites
+                    </h3>
+                    <p class="text-blue-800 text-sm">Measles, Flu, HIV</p>
+                    <p class="text-slate-600 text-sm mt-2">The "Binary" World. You are either infected or you aren't. Modeled via SIR/SEIR.</p>
+                    <div class="mt-4 text-blue-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">Explore Micro &rarr;</div>
+                </div>
+                <div class="bg-green-50 p-6 rounded-xl border border-green-100 hover:shadow-md transition cursor-pointer group" onclick="scrollToSection('macro')">
+                    <h3 class="text-lg font-bold text-green-900 mb-2 flex items-center">
+                        <span class="text-2xl mr-2">🪱</span> Macro-Parasites
+                    </h3>
+                    <p class="text-green-800 text-sm">Hookworm, Schistosoma</p>
+                    <p class="text-slate-600 text-sm mt-2">The "Burden" World. Intensity matters. Modeled via Anderson-May.</p>
+                    <div class="mt-4 text-green-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">Explore Macro &rarr;</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comparison Dashboard -->
+        <section id="compare" class="space-y-8">
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6">Structural Differences</h2>
+                <p class="text-slate-600 mb-6">
+                    Compare the fundamental attributes that drive the choice of mathematical model. Notice how the goal of control shifts from interrupting transmission to controlling morbidity.
+                </p>
+                
+                <div class="grid lg:grid-cols-2 gap-8 items-center">
+                    <!-- Textual Comparison -->
+                    <div class="space-y-4">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                                <span class="font-semibold text-slate-700">Unit of Study</span>
+                                <div class="flex gap-2 text-sm">
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">The Host</span>
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">The Parasite</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                                <span class="font-semibold text-slate-700">Reproduction</span>
+                                <div class="flex gap-2 text-sm">
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Inside Host</span>
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">Outside Host</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                                <span class="font-semibold text-slate-700">Immunity</span>
+                                <div class="flex gap-2 text-sm">
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Strong/Sterilizing</span>
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">Weak/Partial</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                                <span class="font-semibold text-slate-700">Key Metric</span>
+                                <div class="flex gap-2 text-sm">
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Prevalence</span>
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">Intensity</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Radar Chart -->
+                    <div class="flex flex-col items-center justify-center bg-slate-50 rounded-xl p-4">
+                        <h4 class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wide">Attribute Profile</h4>
+                        <div class="chart-container">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Micro-Parasites Section -->
+        <section id="micro" class="bg-white rounded-2xl shadow-lg border-l-8 border-blue-600 p-8">
+            <h2 class="text-2xl font-bold text-blue-900 mb-2">Micro-Parasites: The "Binary" World</h2>
+            <div class="text-sm text-blue-600 font-semibold mb-6">Examples: Measles, Influenza, Smallpox</div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="font-bold text-slate-800 mb-3">Biological Reality</h3>
+                    <ul class="space-y-3 text-slate-700 list-disc pl-5">
+                        <li><strong>Replication:</strong> Occurs <em>within</em> the host. A single virion replicates into billions.</li>
+                        <li><strong>Timescale:</strong> Short generation times (days/weeks).</li>
+                        <li><strong>Status:</strong> Effectively binary. You are $S, E, I,$ or $R$.</li>
+                        <li><strong>Viral Load:</strong> Rarely modelled in transmission dynamics.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 mb-3">The Math (SEIR)</h3>
+                    <div class="math-block text-sm text-slate-800">
+                        $$S \to E \to I \to R$$
+                        <div class="mt-2">$$R_0 = \frac{\beta}{\gamma}$$</div>
+                    </div>
+                    <p class="text-sm text-slate-600 mt-2">
+                        <strong>Study Tip:</strong> When thinking of Micro-parasites, think of <strong>States</strong>. The fundamental question is: "Which box is the individual in?"
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Macro-Parasites Section (Interactive Core) -->
+        <section id="macro" class="bg-white rounded-2xl shadow-lg border-l-8 border-green-600 p-8 space-y-8">
+            <div>
+                <h2 class="text-2xl font-bold text-green-900 mb-2">Macro-Parasites: The "Burden" World</h2>
+                <div class="text-sm text-green-600 font-semibold mb-6">Examples: Hookworm, Schistosoma, Ascaris</div>
+                <p class="text-slate-700 mb-4">
+                    Here, <strong>Prevalence</strong> (percentage infected) is a poor indicator. The Gold Standard is <strong>Intensity</strong> (mean worm burden, $W$).
+                    The worm lifecycle involves an environmental stage ($\Lambda$) and does not allow multiplication inside the host.
+                </p>
+            </div>
+
+            <!-- Anderson-May Model Interactive -->
+            <div class="bg-green-50 rounded-xl p-6 border border-green-100">
+                <h3 class="text-xl font-bold text-green-900 mb-4">Interactive Anderson-May Model</h3>
+                <p class="text-sm text-green-800 mb-4">
+                    Explore how parameters affect the Worm Burden ($W$) over time. This simplified linear simulation demonstrates the fundamental reproductive potential ($R_0$).
+                </p>
+
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Controls -->
+                    <div class="space-y-6 md:col-span-1">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Uptake Rate ($\lambda$)</label>
+                            <input type="range" id="lambdaInput" min="0.01" max="0.5" step="0.01" value="0.1" class="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer accent-green-600">
+                            <span id="lambdaVal" class="text-xs text-slate-500 float-right">0.1</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Fecundity ($k$)</label>
+                            <input type="range" id="kInput" min="1" max="50" step="1" value="20" class="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer accent-green-600">
+                            <span id="kVal" class="text-xs text-slate-500 float-right">20</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Worm Mortality ($\mu$)</label>
+                            <input type="range" id="muInput" min="0.1" max="1.0" step="0.1" value="0.3" class="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer accent-green-600">
+                            <span id="muVal" class="text-xs text-slate-500 float-right">0.3</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Env. Decay ($\delta$)</label>
+                            <input type="range" id="deltaInput" min="0.1" max="2.0" step="0.1" value="0.5" class="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer accent-green-600">
+                            <span id="deltaVal" class="text-xs text-slate-500 float-right">0.5</span>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-green-200">
+                            <div class="text-xs font-bold text-slate-500 uppercase">Calculated R₀</div>
+                            <div id="r0Display" class="text-2xl font-bold text-green-700">1.33</div>
+                            <div class="text-[10px] text-slate-400 mt-1">Formula: $\frac{\lambda k}{\mu \delta}$</div>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="md:col-span-2 bg-white rounded-lg p-2 border border-green-100 flex flex-col justify-center">
+                        <div class="chart-container">
+                            <canvas id="macroChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-sm text-slate-700 bg-white p-4 rounded-lg">
+                    <strong>The Equations:</strong>
+                    <div class="math-block">
+                        $$ \frac{dW}{dt} = \lambda \Lambda - \mu W $$
+                        $$ \frac{d\Lambda}{dt} \approx k W - \delta \Lambda $$
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Note: This simulation uses the linear equations. In reality, density-dependent processes stabilize the population at an equilibrium capacity. Here, $R_0 > 1$ leads to exponential growth, highlighting the infection potential.</p>
+                </div>
+            </div>
+
+            <!-- Aggregation Section -->
+            <div class="bg-amber-50 rounded-xl p-6 border border-amber-100">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-xl font-bold text-amber-900 mb-3">The "Wormy People" (80/20 Rule)</h3>
+                        <p class="text-slate-700 text-sm mb-4">
+                            Worms are not shared equally. They are <strong>Overdispersed</strong> (Negative Binomial Distribution).
+                        </p>
+                        <ul class="text-sm text-slate-700 space-y-2 mb-4">
+                            <li>• ~20% of people carry ~80% of worms.</li>
+                            <li>• These are the "Super-spreaders".</li>
+                            <li>• Treating them (Targeted Treatment) removes most contamination.</li>
+                        </ul>
+                        <div class="p-3 bg-white rounded-lg border border-amber-200 text-xs text-slate-600 italic">
+                            "If you treat the whole population, you waste drugs on people with few worms."
+                        </div>
+                    </div>
+                    <div>
+                        <div class="chart-container">
+                            <canvas id="aggregationChart"></canvas>
+                        </div>
+                        <p class="text-center text-xs text-slate-500 mt-2">Comparison: Random (Poisson) vs Clumped (Negative Binomial)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz" class="space-y-6">
+            <h2 class="text-2xl font-bold text-slate-800 text-center">Self-Assessment</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Question 1 -->
+                <div class="bg-white p-6 rounded-xl shadow border border-slate-100 question-card" data-q="1">
+                    <p class="font-semibold text-slate-800 mb-4">1. Why does R₀ for macro-parasites depend on environmental decay ($\delta$)?</p>
+                    <div class="space-y-2">
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, false, 1)">Because worms multiply inside the host.</button>
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, true, 1)">Because the lifecycle requires an external stage.</button>
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, false, 1)">Because environmental decay increases worm lifespan.</button>
+                    </div>
+                    <div class="mt-4 hidden feedback text-sm p-3 rounded-lg bg-slate-100"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="bg-white p-6 rounded-xl shadow border border-slate-100 question-card" data-q="2">
+                    <p class="font-semibold text-slate-800 mb-4">2. If you build latrines (improved sanitation), which parameter changes?</p>
+                    <div class="space-y-2">
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, true, 2)">The uptake rate ($\lambda$) decreases.</button>
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, false, 2)">The worm mortality ($\mu$) increases.</button>
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, false, 2)">The fecundity ($k$) decreases.</button>
+                    </div>
+                    <div class="mt-4 hidden feedback text-sm p-3 rounded-lg bg-slate-100"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="bg-white p-6 rounded-xl shadow border border-slate-100 question-card" data-q="3">
+                    <p class="font-semibold text-slate-800 mb-4">3. Why might Prevalence remain high after a successful deworming campaign?</p>
+                    <div class="space-y-2">
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, false, 3)">Because drugs don't work on adults.</button>
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, true, 3)">Because many people still have low-intensity infections.</button>
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, false, 3)">Because the worms evolved resistance instantly.</button>
+                    </div>
+                    <div class="mt-4 hidden feedback text-sm p-3 rounded-lg bg-slate-100"></div>
+                </div>
+
+                 <!-- Question 4 -->
+                 <div class="bg-white p-6 rounded-xl shadow border border-slate-100 question-card" data-q="4">
+                    <p class="font-semibold text-slate-800 mb-4">4. What is the primary metric of interest for Macro-parasites?</p>
+                    <div class="space-y-2">
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, false, 4)">Prevalence (Percent infected)</button>
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, true, 4)">Intensity (Worm Burden)</button>
+                        <button class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm transition q-btn" onclick="checkAnswer(this, false, 4)">Viral Load</button>
+                    </div>
+                    <div class="mt-4 hidden feedback text-sm p-3 rounded-lg bg-slate-100"></div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-slate-400 text-sm pb-8">
+            <p>Generated for STA 6222 Course Material.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- Navigation Logic ---
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- Chart 1: Comparison Radar Chart ---
+        const ctxRadar = document.getElementById('comparisonChart').getContext('2d');
+        const radarChart = new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Inside Host Replication', 'Immunity Strength', 'Generation Time', 'Math Complexity', 'Dependence on Intensity'],
+                datasets: [{
+                    label: 'Micro (Virus)',
+                    data: [9, 9, 2, 4, 1],
+                    fill: true,
+                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                    borderColor: 'rgb(37, 99, 235)',
+                    pointBackgroundColor: 'rgb(37, 99, 235)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(37, 99, 235)'
+                }, {
+                    label: 'Macro (Worm)',
+                    data: [0, 2, 9, 8, 10],
+                    fill: true,
+                    backgroundColor: 'rgba(22, 163, 74, 0.2)',
+                    borderColor: 'rgb(22, 163, 74)',
+                    pointBackgroundColor: 'rgb(22, 163, 74)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(22, 163, 74)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: { line: { borderWidth: 3 } },
+                scales: { r: { angleLines: { display: false }, suggestedMin: 0, suggestedMax: 10, ticks: { display: false } } }
+            }
+        });
+
+        // --- Chart 2: Aggregation Bar Chart (Poisson vs NegBinomial) ---
+        // Generating illustrative data
+        const bins = ['0 worms', '1-5 worms', '6-10 worms', '11-50 worms', '>50 worms'];
+        // Poisson-ish (Random): Most people have average, tails are thin
+        const poissonData = [10, 30, 40, 15, 5]; 
+        // Negative Binomial (Clumped): Most have 0, few have MANY
+        const negBinData = [60, 20, 10, 5, 5]; 
+
+        const ctxBar = document.getElementById('aggregationChart').getContext('2d');
+        const barChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: bins,
+                datasets: [{
+                    label: 'Random Distribution (Poisson)',
+                    data: poissonData,
+                    backgroundColor: 'rgba(148, 163, 184, 0.5)',
+                    borderColor: 'rgb(148, 163, 184)',
+                    borderWidth: 1
+                }, {
+                    label: 'Overdispersed (Real Worms)',
+                    data: negBinData,
+                    backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                    borderColor: 'rgb(245, 158, 11)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, title: { display: true, text: '% of Population' } } },
+                plugins: { tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + context.raw + '%'; } } } }
+            }
+        });
+
+        // --- Chart 3: Anderson-May Dynamic Chart ---
+        const ctxMacro = document.getElementById('macroChart').getContext('2d');
+        
+        // Initial Data Generation (Euler Method)
+        function generateMacroData(lambda, k, mu, delta) {
+            let W = 1; // Initial worm burden
+            let L = 5; // Initial environmental larvae
+            let timePoints = [];
+            let wValues = [];
+            let dt = 0.5;
+            let N = 1; // Normalized population
+
+            for (let t = 0; t <= 50; t += dt) {
+                // dW/dt = lambda*L - mu*W
+                // dL/dt = k*W - delta*L (Simplified as per guide note)
+                
+                let dW = (lambda * L) - (mu * W);
+                let dL = (k * W) - (delta * L);
+
+                W = W + dW * dt;
+                L = L + dL * dt;
+                
+                // Clamp for visualization stability if R0 is huge
+                if(W > 500) W = 500;
+
+                if (t % 1 === 0) { // Record integer time steps
+                    timePoints.push(t);
+                    wValues.push(Math.max(0, W)); // Prevent negative
+                }
+            }
+            return { labels: timePoints, data: wValues };
+        }
+
+        let macroData = generateMacroData(0.1, 20, 0.3, 0.5);
+
+        const macroChart = new Chart(ctxMacro, {
+            type: 'line',
+            data: {
+                labels: macroData.labels,
+                datasets: [{
+                    label: 'Mean Worm Burden (W)',
+                    data: macroData.data,
+                    borderColor: 'rgb(22, 163, 74)',
+                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 400 },
+                scales: {
+                    x: { title: { display: true, text: 'Time (Years)' } },
+                    y: { title: { display: true, text: 'Worm Burden (W)' }, min: 0 }
+                },
+                plugins: {
+                    title: { display: true, text: 'Worm Burden Trajectory' }
+                }
+            }
+        });
+
+        // --- Interactive Logic for Anderson-May ---
+        const inputs = ['lambda', 'k', 'mu', 'delta'];
+        inputs.forEach(id => {
+            document.getElementById(id + 'Input').addEventListener('input', updateMacroModel);
+        });
+
+        function updateMacroModel() {
+            const lambda = parseFloat(document.getElementById('lambdaInput').value);
+            const k = parseFloat(document.getElementById('kInput').value);
+            const mu = parseFloat(document.getElementById('muInput').value);
+            const delta = parseFloat(document.getElementById('deltaInput').value);
+
+            // Update Labels
+            document.getElementById('lambdaVal').textContent = lambda;
+            document.getElementById('kVal').textContent = k;
+            document.getElementById('muVal').textContent = mu;
+            document.getElementById('deltaVal').textContent = delta;
+
+            // Calculate R0
+            const r0 = (lambda * k) / (mu * delta);
+            const r0El = document.getElementById('r0Display');
+            r0El.textContent = r0.toFixed(2);
+            
+            if(r0 < 1) {
+                r0El.classList.remove('text-green-700', 'text-red-600');
+                r0El.classList.add('text-blue-600'); // Extinction
+            } else {
+                r0El.classList.remove('text-blue-600');
+                r0El.classList.add('text-green-700'); // Endemic
+            }
+
+            // Update Chart
+            const newData = generateMacroData(lambda, k, mu, delta);
+            macroChart.data.datasets[0].data = newData.data;
+            macroChart.update();
+        }
+
+        // --- Quiz Logic ---
+        function checkAnswer(btn, isCorrect, qId) {
+            const parent = btn.parentElement.parentElement;
+            const feedback = parent.querySelector('.feedback');
+            const allBtns = parent.querySelectorAll('.q-btn');
+            
+            // Disable buttons
+            allBtns.forEach(b => b.classList.add('pointer-events-none', 'opacity-50'));
+
+            feedback.classList.remove('hidden');
+            if (isCorrect) {
+                btn.classList.remove('opacity-50');
+                btn.classList.add('bg-green-100', 'border-green-500', 'text-green-900');
+                feedback.classList.add('bg-green-50', 'text-green-800');
+                feedback.textContent = "Correct! " + getFeedbackText(qId, true);
+            } else {
+                btn.classList.remove('opacity-50');
+                btn.classList.add('bg-red-100', 'border-red-500', 'text-red-900');
+                feedback.classList.add('bg-red-50', 'text-red-800');
+                feedback.textContent = "Incorrect. " + getFeedbackText(qId, false);
+            }
+        }
+
+        function getFeedbackText(qId, correct) {
+            // Contextual feedback
+            const reasoning = {
+                1: "R₀ for macro-parasites represents a cycle: Host → Environment → Host. Eggs must survive in the environment (1/δ) to complete the loop.",
+                2: "Latrines prevent eggs from entering the environment where humans contact them, effectively reducing the uptake rate (λ) or breaking the cycle.",
+                3: "Prevalence counts everyone with >0 worms. Even if drug treatment kills 90% of worms (reducing intensity), many people might still have 1 or 2 worms left, keeping prevalence high.",
+                4: "Because disease severity depends on how many worms you have, not just if you have them, Intensity (W) is the key public health metric."
+            };
+            return reasoning[qId];
+        }
+
+    </script>
+</body>
+</html>
