@@ -7,6 +7,12 @@
     <title>STA 6222: Vaccination & Control Strategies</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- KaTeX for beautiful math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:wght@300;400;700&display=swap"
         rel="stylesheet">
@@ -94,11 +100,6 @@
             color: #059669;
             font-weight: 600;
         }
-
-        .math-font {
-            font-family: 'Times New Roman', Times, serif;
-            font-style: italic;
-        }
     </style>
 </head>
 
@@ -149,8 +150,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
                     <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-emerald-500">
                         <h3 class="font-bold text-emerald-700">Deterministic</h3>
-                        <p class="text-sm text-stone-600 mt-1">Calculate $p_c$ and analyze equilibrium in SIRV models.
-                        </p>
+                        <p class="text-sm text-stone-600 mt-1">Calculate \( p_c \) and analyze equilibrium in SIRV
+                            models.</p>
                     </div>
                     <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-amber-500">
                         <h3 class="font-bold text-amber-700">Stochastic</h3>
@@ -169,15 +170,10 @@
             <div class="mb-10">
                 <h2 class="text-3xl font-bold text-slate-800 mb-4">1. Deterministic Control & Herd Immunity</h2>
                 <p class="text-slate-600 leading-relaxed max-w-3xl">
-                    In deterministic models, vaccination reduces the effective reproduction number, <span
-                        class="math-font">R<sub>e</sub></span>.
-                    The goal is to reduce the susceptible pool enough so that <span class="math-font">R<sub>e</sub>
-                        < 1</span>.
-                            Use the calculator below to explore how the Basic Reproduction Number (<span
-                                class="math-font">R<sub>0</sub></span>) and Vaccine Efficacy (<span
-                                class="math-font">e</span>) determine the critical coverage (<span
-                                class="math-font">p<sub>c</sub></span>) required to stop an epidemic.
-                </p>
+                    In deterministic models, vaccination reduces the effective reproduction number, \( R_e \).
+                    The goal is to reduce the susceptible pool enough so that \( R_e < 1 \). Use the calculator below to
+                        explore how the Basic Reproduction Number (\( R_0 \)) and Vaccine Efficacy (\( e \)) determine
+                        the critical coverage (\( p_c \)) required to stop an epidemic. </p>
             </div>
 
             <div
@@ -186,8 +182,8 @@
                 <div class="space-y-8">
                     <div>
                         <div class="flex justify-between mb-2">
-                            <label class="text-sm font-semibold text-slate-700">Basic Reproduction Number (<span
-                                    class="math-font">R<sub>0</sub></span>)</label>
+                            <label class="text-sm font-semibold text-slate-700">Basic Reproduction Number (\( R_0
+                                \))</label>
                             <span id="r0-val" class="text-emerald-700 font-bold">15</span>
                         </div>
                         <input type="range" id="r0-slider" min="1.5" max="20" step="0.5" value="15"
@@ -197,8 +193,7 @@
 
                     <div>
                         <div class="flex justify-between mb-2">
-                            <label class="text-sm font-semibold text-slate-700">Vaccine Efficacy (<span
-                                    class="math-font">e</span>)</label>
+                            <label class="text-sm font-semibold text-slate-700">Vaccine Efficacy (\( e \))</label>
                             <span id="efficacy-val" class="text-emerald-700 font-bold">95%</span>
                         </div>
                         <input type="range" id="efficacy-slider" min="0.5" max="1.0" step="0.01" value="0.95"
@@ -212,9 +207,8 @@
                         </h4>
                         <div class="text-sm text-slate-700 space-y-2">
                             <p>Formula for Critical Coverage:</p>
-                            <p
-                                class="text-center font-mono bg-white py-2 rounded border border-stone-200 text-emerald-700">
-                                p<sub>c</sub> = (1 - 1/R<sub>0</sub>) / e
+                            <p class="text-center bg-white py-3 rounded border border-stone-200 text-emerald-700">
+                                \[ p_c = \frac{1 - 1/R_0}{e} \]
                             </p>
                             <p id="impossible-warning" class="hidden text-rose-600 font-bold text-xs mt-2">
                                 Warning: With this low efficacy, Herd Immunity is mathematically impossible even with
@@ -231,8 +225,7 @@
                         <canvas id="herdChart"></canvas>
                     </div>
                     <div class="mt-6 text-center">
-                        <p class="text-sm text-slate-500">Critical Coverage Needed (<span
-                                class="math-font">p<sub>c</sub></span>):</p>
+                        <p class="text-sm text-slate-500">Critical Coverage Needed (\( p_c \)):</p>
                         <p id="pc-display" class="text-4xl font-bold text-slate-800">0%</p>
                     </div>
                 </div>
@@ -246,11 +239,10 @@
                     <h2 class="text-3xl font-bold text-slate-800 mb-4">2. The SIRV Model (Routine Vaccination)</h2>
                     <p class="text-slate-600 leading-relaxed max-w-3xl">
                         Real-world vaccination is often continuous (routine), not a one-time event.
-                        We extend the SIR model to <strong>SIRV</strong>, adding a vaccination rate (<span
-                            class="math-font">ν</span>) that moves individuals from Susceptible (S) directly to
-                        Vaccinated (V).
-                        Observe how increasing <span class="math-font">ν</span> flattens the curve and reduces the
-                        equilibrium susceptible population (<span class="math-font">S*</span>).
+                        We extend the SIR model to <strong>SIRV</strong>, adding a vaccination rate (\( \nu \)) that
+                        moves individuals from Susceptible (S) directly to Vaccinated (V).
+                        Observe how increasing \( \nu \) flattens the curve and reduces the equilibrium susceptible
+                        population (\( S^* \)).
                     </p>
                 </div>
 
@@ -261,8 +253,8 @@
 
                         <div class="space-y-6">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Transmission Rate (<span
-                                        class="math-font">β</span>)</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Transmission Rate (\(
+                                    \beta \))</label>
                                 <input type="range" id="beta-slider" min="0.1" max="1.0" step="0.05" value="0.5"
                                     onchange="runSIRV()">
                                 <div class="flex justify-between text-xs text-slate-500 mt-1">
@@ -274,7 +266,7 @@
 
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Routine Vaccination Rate
-                                    (<span class="math-font">ν</span>)</label>
+                                    (\( \nu \))</label>
                                 <input type="range" id="vacc-slider" min="0" max="0.1" step="0.005" value="0.0"
                                     onchange="runSIRV()">
                                 <div class="flex justify-between text-xs text-slate-500 mt-1">
@@ -288,7 +280,7 @@
                                 <p class="font-semibold text-emerald-700 mb-1">Control Condition:</p>
                                 <p class="text-stone-600 italic">To eliminate disease, vaccination rate must satisfy:
                                 </p>
-                                <p class="font-mono text-xs mt-1 text-slate-800">ν > μ(R<sub>0</sub> - 1)</p>
+                                <p class="font-mono text-xs mt-1 text-slate-800">\( \nu > \mu(R_0 - 1) \)</p>
                             </div>
 
                             <button onclick="runSIRV()"
@@ -325,8 +317,7 @@
                 <h2 class="text-3xl font-bold text-slate-800 mb-4">3. Stochastic Control & Extinction Risk</h2>
                 <p class="text-slate-600 leading-relaxed max-w-3xl">
                     In the early stages of an outbreak, random chance plays a huge role.
-                    Even if <span class="math-font">R<sub>e</sub> > 1</span>, there is a probability <span
-                        class="math-font">q</span> that the outbreak naturally dies out.
+                    Even if \( R_e > 1 \), there is a probability \( q \) that the outbreak naturally dies out.
                     Vaccination increases this "bad luck" for the virus. The chart below shows the <strong>Probability
                         of Extinction</strong> as vaccination coverage increases.
                 </p>
@@ -342,8 +333,7 @@
                     <div class="md:col-span-1 flex flex-col justify-center space-y-6">
                         <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
                             <h4 class="font-bold text-slate-800 mb-2">Scenario Config</h4>
-                            <label class="block text-sm text-slate-600 mb-1">R<sub>0</sub> of Introduced
-                                Pathogen</label>
+                            <label class="block text-sm text-slate-600 mb-1">\( R_0 \) of Introduced Pathogen</label>
                             <input type="number" id="stoch-r0" value="2.5" step="0.1" min="1.1"
                                 class="w-full p-2 border border-stone-300 rounded focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                                 onchange="updateStochastic()">
@@ -437,9 +427,9 @@
             <div>
                 <h5 class="text-white text-lg font-bold mb-4 font-serif">Key Formulas</h5>
                 <div class="grid grid-cols-1 gap-2 text-sm font-mono text-slate-400">
-                    <p>R<sub>e</sub> = (1 - p)R<sub>0</sub></p>
-                    <p>p<sub>c</sub> = (1 - 1/R<sub>0</sub>)/e</p>
-                    <p>q = exp(-λ(1 - q))</p>
+                    <p>\( R_e = (1 - p)R_0 \)</p>
+                    <p>\( p_c = \frac{1 - 1/R_0}{e} \)</p>
+                    <p>\( q = e^{-\lambda(1 - q)} \)</p>
                 </div>
             </div>
         </div>
@@ -510,15 +500,7 @@
                 pcDisplay.classList.add('text-rose-600');
                 pcDisplay.classList.remove('text-slate-800');
                 // Chart shows max possible immunity vs gap
-                // If it requires >100%, and we have 100% vax, we are still 100% immune? 
-                // No, if pc > 1, even 100% vax doesn't stop it. 
-                // Let's visualize the Required level conceptually.
-                // Actually, let's visualize the Threshold relative to 100%. 
-                // But for the doughnut, let's show the split of required vs unnecessary to achieve herd immunity? 
-                // No, simpler: Show the Required Portion of Population.
-                herdChartInstance.data.datasets[0].data = [100, 0]; // Visualizing the 'Gap' is hard if gap > 100.
-                // Let's change the visualization slightly for the error case:
-                // Just fill it full green but show error text.
+                herdChartInstance.data.datasets[0].data = [100, 0];
             } else {
                 warningEl.classList.add('hidden');
                 pcDisplay.innerText = (pc * 100).toFixed(1) + "%";
@@ -627,7 +609,6 @@
                 i += dI * dt;
                 r += dR * dt;
 
-                // Push data for chart (downsample slightly for performance if needed, but 400 pts is fine)
                 if (t % 1 === 0) { // Every 1 unit of time
                     labels.push(Math.floor(t));
                     sData.push(Math.max(0, s));
@@ -709,9 +690,7 @@
             const r0 = parseFloat(document.getElementById('stoch-r0').value);
 
             let dataPoints = [];
-            // Calculate q for p from 0 to 1
             for (let p = 0; p <= 1.0; p += 0.02) {
-                // Effective mean offspring: lambda = (1 - p) * R0
                 let lambda = (1 - p) * r0;
                 let q = solveExtinction(lambda);
                 dataPoints.push({ x: p, y: q });
@@ -731,25 +710,25 @@
                     datasets: [
                         {
                             label: 'Baseline',
-                            data: [1, 1, 5, 5, 2], // Worst performance, best "ease" (doing nothing is easy)
+                            data: [1, 1, 5, 5, 2],
                             borderColor: '#94a3b8',
                             backgroundColor: 'rgba(148, 163, 184, 0.2)',
                         },
                         {
                             label: 'Routine (Pre-Vax)',
-                            data: [5, 5, 3, 3, 5], // Best outcome, moderate cost/ease
+                            data: [5, 5, 3, 3, 5],
                             borderColor: '#10b981',
                             backgroundColor: 'rgba(16, 185, 129, 0.2)',
                         },
                         {
                             label: 'Reactive + NPI',
-                            data: [3, 3, 2, 2, 4], // Moderate outcome, expensive (NPIs cost economy)
+                            data: [3, 3, 2, 2, 4],
                             borderColor: '#3b82f6',
                             backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         },
                         {
                             label: 'Targeted',
-                            data: [4, 4, 4, 1, 1], // High efficiency, but hard to implement and equitable issues
+                            data: [4, 4, 4, 1, 1],
                             borderColor: '#a855f7',
                             backgroundColor: 'rgba(168, 85, 247, 0.2)',
                         }
@@ -769,8 +748,17 @@
             });
         }
 
-        // --- INITIALIZATION ---
         window.onload = function () {
+            // Initialize KaTeX
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ]
+            });
+
+            // Initialize Charts
             initHerdChart();
             initSIRVChart();
             initStochasticChart();
