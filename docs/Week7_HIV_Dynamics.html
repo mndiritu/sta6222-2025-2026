@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 7: HIV/AIDS Models & Chronic Infection Dynamics</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- MathJax for nice equations -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .math-block { 
+            overflow-x: auto; 
+            padding: 1rem; 
+            background: #f1f5f9; 
+            border-radius: 0.5rem; 
+            margin: 1rem 0; 
+            border-left: 4px solid #2563eb;
+            font-size: 1.1rem;
+        }
+        .say-bubble {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+            cursor: pointer; /* Changed to pointer */
+            transition: background-color 0.2s;
+        }
+        .say-bubble:hover {
+            background-color: #bae6fd; /* Darker blue on hover */
+        }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        .nav-btn.active { background-color: #2563eb; color: white; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Quiz Styles */
+        .option-btn { transition: all 0.2s; }
+        .option-btn:hover:not(:disabled) { background-color: #f1f5f9; }
+        .option-btn:disabled { cursor: default; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Left Side: Back Link & Title -->
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium border-r border-slate-700 pr-4">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> 
+                        <span class="hidden md:inline">Back to Course Portal</span>
+                        <span class="md:hidden">Back</span>
+                    </a>
+                    <div class="font-bold text-xl tracking-tight">STA 6222 <span class="text-blue-400 font-normal hidden sm:inline">| Week 7</span></div>
+                </div>
+
+                <!-- Right Side: Navigation Buttons -->
+                <div class="flex space-x-1">
+                    <button onclick="switchTab('handout')" id="btn-handout" class="nav-btn px-3 py-2 md:px-4 rounded-md text-sm font-medium transition-colors flex items-center gap-2 active text-slate-300 hover:bg-slate-800">
+                        <i data-lucide="book-open" class="w-4 h-4"></i> <span class="hidden sm:inline">Handout</span>
+                    </button>
+                    <!-- FIXED: Changed ID from btn-sim to btn-simulation to match JS logic -->
+                    <button onclick="switchTab('simulation')" id="btn-simulation" class="nav-btn px-3 py-2 md:px-4 rounded-md text-sm font-medium transition-colors flex items-center gap-2 text-slate-300 hover:bg-slate-800">
+                        <i data-lucide="activity" class="w-4 h-4"></i> <span class="hidden sm:inline">Simulation</span>
+                    </button>
+                    <button onclick="switchTab('quiz')" id="btn-quiz" class="nav-btn px-3 py-2 md:px-4 rounded-md text-sm font-medium transition-colors flex items-center gap-2 text-slate-300 hover:bg-slate-800">
+                        <i data-lucide="brain-circuit" class="w-4 h-4"></i> <span class="hidden sm:inline">Quiz</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-6 w-full max-w-6xl mx-auto">
+        
+        <!-- HANDOUT TAB -->
+        <div id="handout" class="tab-content active max-w-4xl mx-auto">
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-extrabold text-slate-900 mb-4">Week 7 Study Companion</h1>
+                <p class="text-lg text-slate-600">HIV/AIDS Models & Chronic Infection Dynamics</p>
+            </div>
+
+            <!-- Section 1 -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 mb-6 overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-xl font-bold text-slate-800">1. Why HIV Modelling?</h3>
+                </div>
+                <div class="p-6 text-slate-700 leading-relaxed">
+                    <p class="mb-4">HIV is distinct from the acute infections (like measles) we studied previously:</p>
+                    <ul class="list-disc pl-6 space-y-2 mb-4">
+                        <li><strong>Long Duration:</strong> Infectious period lasts years, not days.</li>
+                        <li><strong>No Natural Clearance:</strong> No "Recovered" class in the traditional sense.</li>
+                        <li><strong>Control:</strong> Relies on lifelong treatment (ART) and behavior change, not a one-off vaccine.</li>
+                    </ul>
+                    <p>This allows us to learn how to model <strong>demography</strong> (births/deaths), <strong>endemic equilibria</strong>, and <strong>long-term interventions</strong>.</p>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 mb-6 overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-xl font-bold text-slate-800">2. Natural History (Modeller's View)</h3>
+                </div>
+                <div class="p-6 text-slate-700 leading-relaxed">
+                    <div class="grid md:grid-cols-3 gap-4 mb-4 text-sm">
+                        <div class="bg-red-50 p-4 rounded border border-red-100">
+                            <strong class="block text-red-800 mb-1">Acute ($I_1$)</strong>
+                            High viral load, high infectivity, short duration (weeks).
+                        </div>
+                        <div class="bg-orange-50 p-4 rounded border border-orange-100">
+                            <strong class="block text-orange-800 mb-1">Chronic ($I_2$)</strong>
+                            Lower infectivity, very long duration (years). The main "reservoir".
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded border border-slate-200">
+                            <strong class="block text-slate-800 mb-1">AIDS ($A$)</strong>
+                            Immune failure, high mortality.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 mb-6 overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-xl font-bold text-slate-800">3. The Core SI Model with Demography</h3>
+                </div>
+                <div class="p-6 text-slate-700 leading-relaxed">
+                    <h4 class="font-bold text-lg mb-2 text-slate-900">Variables & Parameters</h4>
+                    <div class="overflow-x-auto mb-6">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="p-3">Symbol</th>
+                                    <th class="p-3">Meaning</th>
+                                    <th class="p-3">Pronunciation (Click to Listen)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-3">$\Lambda$</td><td class="p-3">Recruitment (Births)</td><td class="p-3"><span onclick="speak('Lambda')" class="say-bubble"><i data-lucide="volume-2" class="w-3 h-3"></i> Lambda</span></td></tr>
+                                <tr><td class="p-3">$\mu$</td><td class="p-3">Natural Mortality</td><td class="p-3"><span onclick="speak('Mew')" class="say-bubble"><i data-lucide="volume-2" class="w-3 h-3"></i> Mew</span></td></tr>
+                                <tr><td class="p-3">$\alpha$</td><td class="p-3">HIV Excess Mortality</td><td class="p-3"><span onclick="speak('Alpha')" class="say-bubble"><i data-lucide="volume-2" class="w-3 h-3"></i> Alpha</span></td></tr>
+                                <tr><td class="p-3">$\beta$</td><td class="p-3">Transmission Rate</td><td class="p-3"><span onclick="speak('Beta')" class="say-bubble"><i data-lucide="volume-2" class="w-3 h-3"></i> Beta</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="font-bold text-lg mb-2 text-slate-900">Equations</h4>
+                    <div class="math-block">
+                        $$ \frac{dS}{dt} = \Lambda - \beta \frac{S I}{N} - \mu S $$
+                    </div>
+                    <p class="italic text-sm text-slate-500 mb-4">"d S d t equals lambda minus beta S I over N minus mu S"</p>
+                    
+                    <div class="math-block">
+                        $$ \frac{dI}{dt} = \beta \frac{S I}{N} - (\mu + \alpha) I $$
+                    </div>
+                    <p class="italic text-sm text-slate-500 mb-4">"d I d t equals beta S I over N minus (mu plus alpha) times I"</p>
+
+                    <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 mt-4">
+                        <strong>Disease-Free Equilibrium (DFE):</strong>
+                        <br />
+                        Without infection ($I=0$), population stabilizes at $S_0 = \Lambda / \mu$.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 mb-6 overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-xl font-bold text-slate-800">4. Basic Reproduction Number ($R_0$)</h3>
+                </div>
+                <div class="p-6 text-slate-700 leading-relaxed">
+                    <p class="mb-4">For chronic infections, $R_0$ depends heavily on the <strong>duration</strong> of infection.</p>
+                    <div class="math-block text-center text-xl">
+                        $$ R_0 \approx \frac{\beta}{\mu + \alpha} $$
+                    </div>
+                    <p class="text-center text-sm text-slate-500 mb-4">Rate of spread / Rate of removal</p>
+                    <p><strong>Logic:</strong> Even if $\beta$ is low, a small denominator (long life with HIV) makes $R_0$ large.</p>
+                </div>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 mb-6 overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-xl font-bold text-slate-800">5. Adding Treatment (ART)</h3>
+                </div>
+                <div class="p-6 text-slate-700 leading-relaxed">
+                    <p class="mb-4">We add a compartment $T$ (Treated). People move from $I$ to $T$ at rate $\tau$.</p>
+                    <ul class="list-disc pl-6 mb-4">
+                        <li>$\tau$ <span onclick="speak('Tau')" class="say-bubble"><i data-lucide="volume-2" class="w-3 h-3"></i> Tau</span>: Treatment initiation rate.</li>
+                        <li>$\beta_T$: Infectivity on treatment (usually $\approx 0$).</li>
+                    </ul>
+                    <div class="math-block">
+                        $$ \frac{dT}{dt} = \tau I - (\mu + \alpha_T) T $$
+                    </div>
+                    <p className="font-semibold text-slate-800 mt-4">Concept: Treatment as Prevention</p>
+                    <p>Increasing $\tau$ moves people out of the highly infectious $I$ state, lowering the effective reproduction number.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIMULATION TAB -->
+        <div id="simulation" class="tab-content">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">Interactive HIV+ART Model</h2>
+                <p class="text-slate-600">Adjust the parameters to see how Treatment ($\tau$) and Transmission ($\beta$) affect the epidemic.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Controls -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 h-fit">
+                    <h3 class="font-bold text-slate-800 border-b pb-2 mb-4">Parameters</h3>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="flex justify-between text-sm font-medium text-slate-700 mb-1">
+                                <span>Transmission ($\beta$)</span>
+                                <span id="val-beta">0.5</span>
+                            </label>
+                            <input type="range" id="inp-beta" min="0.1" max="1.5" step="0.05" value="0.5" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        </div>
+
+                        <div>
+                            <label class="flex justify-between text-sm font-medium text-slate-700 mb-1">
+                                <span>Treatment Rate ($\tau$)</span>
+                                <span id="val-tau">0.0</span>
+                            </label>
+                            <input type="range" id="inp-tau" min="0.0" max="1.0" step="0.05" value="0.0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600">
+                            <p class="text-xs text-slate-500 mt-1">Rate of moving from $I \to T$.</p>
+                        </div>
+
+                        <div>
+                            <label class="flex justify-between text-sm font-medium text-slate-700 mb-1">
+                                <span>Untreated Death Rate ($\alpha$)</span>
+                                <span id="val-alpha">0.1</span>
+                            </label>
+                            <input type="range" id="inp-alpha" min="0.05" max="0.5" step="0.01" value="0.1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-600">
+                            <p class="text-xs text-slate-500 mt-1">Higher means shorter lifespan.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 p-4 bg-slate-100 rounded-lg text-center">
+                        <span class="block text-sm text-slate-500 font-semibold uppercase">Effective $R_0$</span>
+                        <span id="display-r0" class="text-4xl font-bold text-green-600">0.00</span>
+                        <span id="display-status" class="block text-xs mt-1">Status</span>
+                    </div>
+                </div>
+
+                <!-- Graph -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-4">Population Dynamics (50 Years)</h3>
+                    <div class="relative h-96 w-full">
+                        <canvas id="simChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-sm text-slate-600">
+                        <strong>Observation:</strong> Increase $\tau$ (Treatment) to see the red curve ($I$) drop and the green curve ($T$) rise. If $R_0 < 1$, both infection curves should eventually trend toward zero.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUIZ TAB -->
+        <div id="quiz" class="tab-content max-w-3xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">Self-Assessment Quiz</h2>
+                <p class="text-slate-600">Test your understanding. Feedback is immediate.</p>
+            </div>
+
+            <div id="quiz-container" class="space-y-6">
+                <!-- Questions injected by JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-100 border-t border-slate-200 py-6 text-center text-slate-500 text-sm mt-auto">
+        <p>&copy; University of Nairobi | STA 6222 Modelling Disease Transmission</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // 1. TABS LOGIC
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('active', 'bg-blue-600', 'text-white');
+                el.classList.add('text-slate-300', 'hover:bg-slate-800');
+            });
+
+            // Show selected tab
+            const tabEl = document.getElementById(tabId);
+            if (tabEl) {
+                tabEl.classList.add('active');
+            }
+            
+            // Style active button
+            const btn = document.getElementById('btn-' + tabId);
+            if (btn) {
+                btn.classList.add('active', 'bg-blue-600', 'text-white');
+                btn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+            }
+
+            // Initialize Lucide icons again if needed
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        // 2. TEXT-TO-SPEECH
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Sorry, your browser does not support text-to-speech.");
+            }
+        }
+
+        // 3. SIMULATION LOGIC (Chart.js + Euler Method)
+        let chartInstance = null;
+
+        function initSimulation() {
+            const ctx = document.getElementById('simChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Susceptible (S)', data: [], borderColor: '#94a3b8', borderWidth: 2, pointRadius: 0 },
+                        { label: 'Infected (I)', data: [], borderColor: '#dc2626', borderWidth: 3, pointRadius: 0 },
+                        { label: 'Treated (T)', data: [], borderColor: '#16a34a', borderWidth: 3, pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { title: { display: true, text: 'Years' } },
+                        y: { title: { display: true, text: 'Population' } }
+                    }
+                }
+            });
+            
+            // Initial Run
+            runSimulation();
+
+            // Add Event Listeners to Inputs
+            ['beta', 'tau', 'alpha'].forEach(id => {
+                const el = document.getElementById('inp-' + id);
+                if (el) {
+                    el.addEventListener('input', (e) => {
+                        const disp = document.getElementById('val-' + id);
+                        if (disp) disp.textContent = e.target.value;
+                        runSimulation();
+                    });
+                }
+            });
+        }
+
+        function runSimulation() {
+            // Get Parameters
+            const beta = parseFloat(document.getElementById('inp-beta').value);
+            const tau = parseFloat(document.getElementById('inp-tau').value);
+            const alpha = parseFloat(document.getElementById('inp-alpha').value);
+            const mu = 0.02; // Fixed
+            const lambda = 100; // Fixed
+
+            // Calculate R0 (Heuristic: beta / (mu + alpha + tau))
+            const r0 = beta / (mu + alpha + tau);
+            
+            // Update UI R0
+            const r0El = document.getElementById('display-r0');
+            const statusEl = document.getElementById('display-status');
+            r0El.textContent = r0.toFixed(2);
+            if (r0 > 1) {
+                r0El.className = "text-4xl font-bold text-red-600";
+                statusEl.textContent = "Endemic State (Spreads)";
+            } else {
+                r0El.className = "text-4xl font-bold text-green-600";
+                statusEl.textContent = "Disease Dies Out";
+            }
+
+            // Run Euler Loop
+            const dt = 0.1;
+            const years = 50;
+            const steps = years / dt;
+
+            let S = 5000, I = 10, T = 0, N = 0;
+            const labels = [], dataS = [], dataI = [], dataT = [];
+
+            for (let t = 0; t <= steps; t++) {
+                if (t % 10 === 0) {
+                    labels.push((t * dt).toFixed(0));
+                    dataS.push(S);
+                    dataI.push(I);
+                    dataT.push(T);
+                }
+
+                N = S + I + T;
+                const lambda_inf = (beta * I) / N; // Force of infection
+
+                const dS = lambda - lambda_inf * S - mu * S;
+                const dI = lambda_inf * S - (mu + alpha + tau) * I;
+                const dT = tau * I - (mu + 0.02) * T; // assume alpha_T = 0.02 (normal mortality)
+
+                S += dS * dt;
+                I += dI * dt;
+                T += dT * dt;
+            }
+
+            // Update Chart
+            chartInstance.data.labels = labels;
+            chartInstance.data.datasets[0].data = dataS;
+            chartInstance.data.datasets[1].data = dataI;
+            chartInstance.data.datasets[2].data = dataT;
+            chartInstance.update();
+        }
+
+        // 4. QUIZ LOGIC
+        const questions = [
+            {
+                q: "Which parameter represents recruitment (births/in-migration) into the population?",
+                options: ["$\\beta$ (Beta)", "$\\mu$ (Mu)", "$\\Lambda$ (Lambda)", "$\\tau$ (Tau)"],
+                correct: 2,
+                explain: "Correct! $\\Lambda$ (Lambda) denotes the rate of new entries into the population."
+            },
+            {
+                q: "In chronic disease modelling, why can $R_0$ be high even if transmission ($\\beta$) is low?",
+                options: ["Because the population is small", "Because the infectious period is very long", "Because there is no death rate", "Because treatment increases infectivity"],
+                correct: 1,
+                explain: "Correct! $R_0 \\approx \\text{rate} \\times \\text{duration}$. A duration of 10+ years multiplies the risk significantly."
+            },
+            {
+                q: "What is the primary effect of increasing the treatment rate ($\\tau$) in the model?",
+                options: ["It increases the natural mortality rate", "It moves people from S to I", "It moves people from I to T, reducing infectious duration", "It stops recruitment ($\\Lambda$)"],
+                correct: 2,
+                explain: "Correct! $\\tau$ moves people from the untreated, high-risk group ($I$) to the treated, low-risk group ($T$)."
+            },
+            {
+                q: "Which equation represents the Disease-Free Equilibrium (DFE) for Susceptibles?",
+                options: ["$S_0 = \\Lambda / \\mu$", "$S_0 = \\beta / \\alpha$", "$S_0 = 0$", "$S_0 = \\mu / \\Lambda$"],
+                correct: 0,
+                explain: "Correct! Without disease, the population balances where Births = Natural Deaths ($\\Lambda = \\mu S$)."
+            }
+        ];
+
+        function initQuiz() {
+            const container = document.getElementById('quiz-container');
+            
+            questions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-white border border-slate-200 rounded-lg p-6 shadow-sm";
+                
+                let optionsHtml = '';
+                q.options.forEach((opt, oIdx) => {
+                    optionsHtml += `<button onclick="checkAnswer(${idx}, ${oIdx}, this)" class="option-btn w-full text-left px-4 py-3 rounded border border-slate-200 text-slate-700 mb-2 relative">${opt}</button>`;
+                });
+
+                card.innerHTML = `
+                    <h3 class="font-bold text-lg text-slate-800 mb-4">${idx + 1}. ${q.q}</h3>
+                    <div class="space-y-2" id="q-${idx}-options">${optionsHtml}</div>
+                    <div id="q-${idx}-feedback" class="hidden mt-4 p-3 rounded text-sm"></div>
+                `;
+                container.appendChild(card);
+            });
+            // Re-render math after injecting HTML
+            if (window.MathJax) window.MathJax.typesetPromise();
+        }
+
+        function checkAnswer(qIdx, optIdx, btnElement) {
+            const q = questions[qIdx];
+            const parent = document.getElementById(`q-${qIdx}-options`);
+            const feedback = document.getElementById(`q-${qIdx}-feedback`);
+            
+            // Disable all buttons in this question
+            const buttons = parent.querySelectorAll('button');
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.correct) {
+                    btn.classList.add('bg-green-100', 'border-green-500', 'text-green-900', 'font-semibold');
+                    btn.innerHTML += '<i data-lucide="check-circle" class="absolute right-4 top-3 w-5 h-5 text-green-600 inline"></i>';
+                } else if (idx === optIdx && idx !== q.correct) {
+                    btn.classList.add('bg-red-100', 'border-red-500', 'text-red-900');
+                    btn.innerHTML += '<i data-lucide="x-circle" class="absolute right-4 top-3 w-5 h-5 text-red-600 inline"></i>';
+                } else {
+                    btn.classList.add('opacity-50');
+                }
+            });
+
+            // Show feedback
+            feedback.classList.remove('hidden');
+            if (optIdx === q.correct) {
+                feedback.classList.add('bg-green-100', 'text-green-800');
+                feedback.innerHTML = `<strong>Correct!</strong> ${q.explain}`;
+            } else {
+                feedback.classList.add('bg-red-100', 'text-red-800');
+                feedback.innerHTML = `<strong>Incorrect.</strong> ${q.explain}`;
+            }
+
+            lucide.createIcons();
+            
+            // Re-render math in the feedback
+            if (window.MathJax) {
+                window.MathJax.typesetPromise([feedback]);
+            }
+        }
+
+        // INITIALIZE ON LOAD
+        window.onload = function() {
+            lucide.createIcons();
+            initSimulation();
+            initQuiz();
+            // Force Tab 1 active
+            switchTab('handout');
+        };
+
+    </script>
+</body>
+</html>

@@ -1,21 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STA 6222: Vaccination & Control Strategies</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    
     <!-- KaTeX for beautiful math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:wght@300;400;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals & Clinical Accents -->
     <!-- Background: Stone-50 (#fafaf9) -->
     <!-- Text: Slate-800 (#1e293b) -->
@@ -40,42 +37,24 @@
         <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #fafaf9;
-            color: #1e293b;
-        }
-
-        h1,
-        h2,
-        h3,
-        h4 {
-            font-family: 'Merriweather', serif;
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: #fafaf9; color: #1e293b; }
+        h1, h2, h3, h4 { font-family: 'Merriweather', serif; }
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 800px;
-            /* Max width to prevent stretching */
-            height: 350px;
-            /* Default height */
+            max-width: 800px; /* Max width to prevent stretching */
+            height: 350px;    /* Default height */
             margin-left: auto;
             margin-right: auto;
         }
-
         @media (min-width: 768px) {
-            .chart-container {
-                height: 400px;
-            }
+            .chart-container { height: 400px; }
         }
-
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
         }
-
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 16px;
@@ -84,9 +63,8 @@
             background: #059669;
             cursor: pointer;
             margin-top: -6px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
-
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 4px;
@@ -94,7 +72,6 @@
             background: #cbd5e1;
             border-radius: 2px;
         }
-
         .nav-active {
             border-bottom: 2px solid #059669;
             color: #059669;
@@ -102,35 +79,32 @@
         }
     </style>
 </head>
-
 <body class="flex flex-col min-h-screen">
 
     <!-- Navigation -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
-                <div class="flex items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="flex items-center text-stone-500 hover:text-emerald-600 font-medium text-sm transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Portal
+                    </a>
+                    <span class="text-stone-300 h-6 border-l border-stone-300"></span>
                     <span class="text-emerald-700 font-bold text-lg font-serif">STA 6222: Week 6</span>
                 </div>
                 <div class="hidden sm:flex space-x-8 items-center">
-                    <button onclick="scrollToSection('hero')"
-                        class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">Overview</button>
-                    <button onclick="scrollToSection('herd-immunity')"
-                        class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">Deterministic
-                        Control</button>
-                    <button onclick="scrollToSection('sirv-model')"
-                        class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">SIRV
-                        Dynamics</button>
-                    <button onclick="scrollToSection('stochastic')"
-                        class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">Stochastic
-                        Risk</button>
-                    <button onclick="scrollToSection('strategy')"
-                        class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">Strategy Lab</button>
+                    <button onclick="scrollToSection('hero')" class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">Overview</button>
+                    <button onclick="scrollToSection('herd-immunity')" class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">Deterministic Control</button>
+                    <button onclick="scrollToSection('sirv-model')" class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">SIRV Dynamics</button>
+                    <button onclick="scrollToSection('stochastic')" class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">Stochastic Risk</button>
+                    <button onclick="scrollToSection('strategy')" class="text-gray-500 hover:text-emerald-600 px-3 py-2 text-sm font-medium">Strategy Lab</button>
                 </div>
                 <!-- Mobile Menu Button (simplified) -->
                 <div class="flex items-center sm:hidden">
-                    <button class="text-gray-500 hover:text-emerald-600"
-                        onclick="alert('Please scroll to navigate.')">Menu</button>
+                    <button class="text-gray-500 hover:text-emerald-600" onclick="alert('Please scroll to navigate.')">Menu</button>
                 </div>
             </div>
         </div>
@@ -140,18 +114,16 @@
     <main class="flex-grow">
 
         <!-- Hero Section -->
-        <section id="hero" class="bg-stone-100 py-12 border-b border-stone-200">
+        <section id="hero" class="bg-stone-100 py-12 border-b border-stone-200 scroll-mt-20">
             <div class="max-w-4xl mx-auto px-4 text-center">
                 <h1 class="text-4xl md:text-5xl font-bold text-stone-800 mb-6">Vaccination & Control Strategies</h1>
                 <p class="text-lg text-stone-600 mb-8 max-w-2xl mx-auto">
-                    Bridging theory and practice: From deriving critical herd immunity thresholds to simulating
-                    stochastic extinction and comparing real-world intervention strategies.
+                    Bridging theory and practice: From deriving critical herd immunity thresholds to simulating stochastic extinction and comparing real-world intervention strategies.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
                     <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-emerald-500">
                         <h3 class="font-bold text-emerald-700">Deterministic</h3>
-                        <p class="text-sm text-stone-600 mt-1">Calculate \( p_c \) and analyze equilibrium in SIRV
-                            models.</p>
+                        <p class="text-sm text-stone-600 mt-1">Calculate \( p_c \) and analyze equilibrium in SIRV models.</p>
                     </div>
                     <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-amber-500">
                         <h3 class="font-bold text-amber-700">Stochastic</h3>
@@ -166,28 +138,25 @@
         </section>
 
         <!-- SECTION 1: DETERMINISTIC CONTROL (HERD IMMUNITY) -->
-        <section id="herd-immunity" class="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="herd-immunity" class="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-20">
             <div class="mb-10">
                 <h2 class="text-3xl font-bold text-slate-800 mb-4">1. Deterministic Control & Herd Immunity</h2>
                 <p class="text-slate-600 leading-relaxed max-w-3xl">
-                    In deterministic models, vaccination reduces the effective reproduction number, \( R_e \).
-                    The goal is to reduce the susceptible pool enough so that \( R_e < 1 \). Use the calculator below to
-                        explore how the Basic Reproduction Number (\( R_0 \)) and Vaccine Efficacy (\( e \)) determine
-                        the critical coverage (\( p_c \)) required to stop an epidemic. </p>
+                    In deterministic models, vaccination reduces the effective reproduction number, \( R_e \). 
+                    The goal is to reduce the susceptible pool enough so that \( R_e < 1 \). 
+                    Use the calculator below to explore how the Basic Reproduction Number (\( R_0 \)) and Vaccine Efficacy (\( e \)) determine the critical coverage (\( p_c \)) required to stop an epidemic.
+                </p>
             </div>
 
-            <div
-                class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start bg-white p-8 rounded-xl shadow-md border border-stone-200">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start bg-white p-8 rounded-xl shadow-md border border-stone-200">
                 <!-- Controls -->
                 <div class="space-y-8">
                     <div>
                         <div class="flex justify-between mb-2">
-                            <label class="text-sm font-semibold text-slate-700">Basic Reproduction Number (\( R_0
-                                \))</label>
+                            <label class="text-sm font-semibold text-slate-700">Basic Reproduction Number (\( R_0 \))</label>
                             <span id="r0-val" class="text-emerald-700 font-bold">15</span>
                         </div>
-                        <input type="range" id="r0-slider" min="1.5" max="20" step="0.5" value="15"
-                            oninput="updateHerdImmunity()">
+                        <input type="range" id="r0-slider" min="1.5" max="20" step="0.5" value="15" oninput="updateHerdImmunity()">
                         <p class="text-xs text-slate-500 mt-1">Typical values: Flu ~2, Smallpox ~5, Measles ~15</p>
                     </div>
 
@@ -196,23 +165,19 @@
                             <label class="text-sm font-semibold text-slate-700">Vaccine Efficacy (\( e \))</label>
                             <span id="efficacy-val" class="text-emerald-700 font-bold">95%</span>
                         </div>
-                        <input type="range" id="efficacy-slider" min="0.5" max="1.0" step="0.01" value="0.95"
-                            oninput="updateHerdImmunity()">
-                        <p class="text-xs text-slate-500 mt-1">1.0 = Perfect vaccine. Lower values increase required
-                            coverage.</p>
+                        <input type="range" id="efficacy-slider" min="0.5" max="1.0" step="0.01" value="0.95" oninput="updateHerdImmunity()">
+                        <p class="text-xs text-slate-500 mt-1">1.0 = Perfect vaccine. Lower values increase required coverage.</p>
                     </div>
 
                     <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
-                        <h4 class="font-bold text-slate-800 mb-2 border-b border-stone-300 pb-1">Mathematical Insight
-                        </h4>
+                        <h4 class="font-bold text-slate-800 mb-2 border-b border-stone-300 pb-1">Mathematical Insight</h4>
                         <div class="text-sm text-slate-700 space-y-2">
                             <p>Formula for Critical Coverage:</p>
                             <p class="text-center bg-white py-3 rounded border border-stone-200 text-emerald-700">
                                 \[ p_c = \frac{1 - 1/R_0}{e} \]
                             </p>
                             <p id="impossible-warning" class="hidden text-rose-600 font-bold text-xs mt-2">
-                                Warning: With this low efficacy, Herd Immunity is mathematically impossible even with
-                                100% coverage!
+                                Warning: With this low efficacy, Herd Immunity is mathematically impossible even with 100% coverage!
                             </p>
                         </div>
                     </div>
@@ -233,16 +198,14 @@
         </section>
 
         <!-- SECTION 2: SIRV MODEL SIMULATION -->
-        <section id="sirv-model" class="py-16 bg-white border-t border-stone-200">
+        <section id="sirv-model" class="py-16 bg-white border-t border-stone-200 scroll-mt-20">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="mb-10">
                     <h2 class="text-3xl font-bold text-slate-800 mb-4">2. The SIRV Model (Routine Vaccination)</h2>
                     <p class="text-slate-600 leading-relaxed max-w-3xl">
-                        Real-world vaccination is often continuous (routine), not a one-time event.
-                        We extend the SIR model to <strong>SIRV</strong>, adding a vaccination rate (\( \nu \)) that
-                        moves individuals from Susceptible (S) directly to Vaccinated (V).
-                        Observe how increasing \( \nu \) flattens the curve and reduces the equilibrium susceptible
-                        population (\( S^* \)).
+                        Real-world vaccination is often continuous (routine), not a one-time event. 
+                        We extend the SIR model to <strong>SIRV</strong>, adding a vaccination rate (\( \nu \)) that moves individuals from Susceptible (S) directly to Vaccinated (V). 
+                        Observe how increasing \( \nu \) flattens the curve and reduces the equilibrium susceptible population (\( S^* \)).
                     </p>
                 </div>
 
@@ -250,13 +213,11 @@
                     <!-- Controls -->
                     <div class="col-span-1 bg-stone-50 p-6 rounded-xl border border-stone-200 h-fit">
                         <h3 class="text-lg font-bold text-slate-800 mb-6">Simulation Parameters</h3>
-
+                        
                         <div class="space-y-6">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Transmission Rate (\(
-                                    \beta \))</label>
-                                <input type="range" id="beta-slider" min="0.1" max="1.0" step="0.05" value="0.5"
-                                    onchange="runSIRV()">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Transmission Rate (\( \beta \))</label>
+                                <input type="range" id="beta-slider" min="0.1" max="1.0" step="0.05" value="0.5" onchange="runSIRV()">
                                 <div class="flex justify-between text-xs text-slate-500 mt-1">
                                     <span>Low Spread</span>
                                     <span id="beta-display">0.5</span>
@@ -265,10 +226,8 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Routine Vaccination Rate
-                                    (\( \nu \))</label>
-                                <input type="range" id="vacc-slider" min="0" max="0.1" step="0.005" value="0.0"
-                                    onchange="runSIRV()">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Routine Vaccination Rate (\( \nu \))</label>
+                                <input type="range" id="vacc-slider" min="0" max="0.1" step="0.005" value="0.0" onchange="runSIRV()">
                                 <div class="flex justify-between text-xs text-slate-500 mt-1">
                                     <span>None (0.0)</span>
                                     <span id="vacc-display">0.0</span>
@@ -278,13 +237,11 @@
 
                             <div class="p-3 bg-white rounded border border-stone-200 text-sm">
                                 <p class="font-semibold text-emerald-700 mb-1">Control Condition:</p>
-                                <p class="text-stone-600 italic">To eliminate disease, vaccination rate must satisfy:
-                                </p>
+                                <p class="text-stone-600 italic">To eliminate disease, vaccination rate must satisfy:</p>
                                 <p class="font-mono text-xs mt-1 text-slate-800">\( \nu > \mu(R_0 - 1) \)</p>
                             </div>
-
-                            <button onclick="runSIRV()"
-                                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow transition duration-200 flex items-center justify-center gap-2">
+                            
+                            <button onclick="runSIRV()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow transition duration-200 flex items-center justify-center gap-2">
                                 <span>&#8635;</span> Run Simulation
                             </button>
                         </div>
@@ -312,14 +269,13 @@
         </section>
 
         <!-- SECTION 3: STOCHASTIC CONTROL -->
-        <section id="stochastic" class="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="stochastic" class="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-20">
             <div class="mb-10">
                 <h2 class="text-3xl font-bold text-slate-800 mb-4">3. Stochastic Control & Extinction Risk</h2>
                 <p class="text-slate-600 leading-relaxed max-w-3xl">
-                    In the early stages of an outbreak, random chance plays a huge role.
-                    Even if \( R_e > 1 \), there is a probability \( q \) that the outbreak naturally dies out.
-                    Vaccination increases this "bad luck" for the virus. The chart below shows the <strong>Probability
-                        of Extinction</strong> as vaccination coverage increases.
+                    In the early stages of an outbreak, random chance plays a huge role. 
+                    Even if \( R_e > 1 \), there is a probability \( q \) that the outbreak naturally dies out. 
+                    Vaccination increases this "bad luck" for the virus. The chart below shows the <strong>Probability of Extinction</strong> as vaccination coverage increases.
                 </p>
             </div>
 
@@ -334,18 +290,14 @@
                         <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
                             <h4 class="font-bold text-slate-800 mb-2">Scenario Config</h4>
                             <label class="block text-sm text-slate-600 mb-1">\( R_0 \) of Introduced Pathogen</label>
-                            <input type="number" id="stoch-r0" value="2.5" step="0.1" min="1.1"
-                                class="w-full p-2 border border-stone-300 rounded focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                                onchange="updateStochastic()">
+                            <input type="number" id="stoch-r0" value="2.5" step="0.1" min="1.1" class="w-full p-2 border border-stone-300 rounded focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" onchange="updateStochastic()">
                             <p class="text-xs text-slate-500 mt-2">Try 1.5 (Flu) vs 15 (Measles).</p>
                         </div>
-
+                        
                         <div class="text-sm text-slate-700">
                             <p class="mb-2"><strong>Key Insight:</strong></p>
-                            <p>Notice that the curve rises <em>before</em> we hit the herd immunity threshold (where
-                                probability becomes 1.0).</p>
-                            <p class="mt-2">This means partial vaccination is valuable—it increases the likelihood of an
-                                introduction fizzling out.</p>
+                            <p>Notice that the curve rises <em>before</em> we hit the herd immunity threshold (where probability becomes 1.0).</p>
+                            <p class="mt-2">This means partial vaccination is valuable—it increases the likelihood of an introduction fizzling out.</p>
                         </div>
                     </div>
                 </div>
@@ -353,50 +305,39 @@
         </section>
 
         <!-- SECTION 4: STRATEGY COMPARISON -->
-        <section id="strategy" class="py-16 bg-stone-100 border-t border-stone-200">
+        <section id="strategy" class="py-16 bg-stone-100 border-t border-stone-200 scroll-mt-20">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="mb-10 text-center">
                     <h2 class="text-3xl font-bold text-slate-800 mb-4">4. Strategy Lab: Comparative Analysis</h2>
                     <p class="text-slate-600 max-w-2xl mx-auto">
-                        We rarely rely on just one tool. Public health strategies combine vaccination, NPIs, and
-                        reactive measures.
-                        Compare the theoretical performance of different approaches for a <strong>Measles-like
-                            outbreak</strong>.
+                        We rarely rely on just one tool. Public health strategies combine vaccination, NPIs, and reactive measures. 
+                        Compare the theoretical performance of different approaches for a <strong>Measles-like outbreak</strong>.
                     </p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     <!-- Strategy Cards -->
                     <div class="space-y-4">
-                        <div
-                            class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-rose-500 hover:shadow-md transition">
+                        <div class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-rose-500 hover:shadow-md transition">
                             <h3 class="font-bold text-slate-800">Baseline (No Control)</h3>
-                            <p class="text-sm text-slate-600">Natural course of the epidemic. High peak, rapid burnout,
-                                massive burden.</p>
+                            <p class="text-sm text-slate-600">Natural course of the epidemic. High peak, rapid burnout, massive burden.</p>
                         </div>
-                        <div
-                            class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-emerald-500 hover:shadow-md transition">
+                        <div class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-emerald-500 hover:shadow-md transition">
                             <h3 class="font-bold text-slate-800">Strategy A: Pre-emptive Routine</h3>
-                            <p class="text-sm text-slate-600">High coverage (95%) maintained before outbreak. Prevents
-                                epidemic entirely (Herd Immunity).</p>
+                            <p class="text-sm text-slate-600">High coverage (95%) maintained before outbreak. Prevents epidemic entirely (Herd Immunity).</p>
                         </div>
-                        <div
-                            class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-blue-500 hover:shadow-md transition">
+                        <div class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-blue-500 hover:shadow-md transition">
                             <h3 class="font-bold text-slate-800">Strategy B: Reactive + NPIs</h3>
-                            <p class="text-sm text-slate-600">Lower initial coverage. Response involves Ring Vaccination
-                                and Social Distancing when cases appear.</p>
+                            <p class="text-sm text-slate-600">Lower initial coverage. Response involves Ring Vaccination and Social Distancing when cases appear.</p>
                         </div>
-                        <div
-                            class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-purple-500 hover:shadow-md transition">
+                        <div class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-purple-500 hover:shadow-md transition">
                             <h3 class="font-bold text-slate-800">Strategy C: Targeted</h3>
-                            <p class="text-sm text-slate-600">Focuses limited doses on "Hubs" (Super-spreaders).
-                                Mathematically efficient but ethically/logistically hard.</p>
+                            <p class="text-sm text-slate-600">Focuses limited doses on "Hubs" (Super-spreaders). Mathematically efficient but ethically/logistically hard.</p>
                         </div>
                     </div>
 
                     <!-- Radar Comparison -->
-                    <div
-                        class="bg-white p-6 rounded-xl shadow-md border border-stone-200 flex flex-col items-center justify-center">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200 flex flex-col items-center justify-center">
                         <h4 class="text-lg font-bold text-slate-800 mb-4">Performance Metrics</h4>
                         <div class="chart-container" style="max-width: 500px; height: 400px;">
                             <canvas id="strategyRadar"></canvas>
@@ -467,7 +408,7 @@
                         legend: { position: 'bottom' },
                         tooltip: {
                             callbacks: {
-                                label: function (context) {
+                                label: function(context) {
                                     return context.label + ': ' + context.raw.toFixed(1) + '%';
                                 }
                             }
@@ -488,8 +429,8 @@
             document.getElementById('efficacy-val').innerText = (efficacy * 100).toFixed(0) + '%';
 
             // Calculate Critical Coverage pc = (1 - 1/R0) / e
-            let pc = (1 - (1 / r0)) / efficacy;
-
+            let pc = (1 - (1/r0)) / efficacy;
+            
             // Logic check
             const warningEl = document.getElementById('impossible-warning');
             const pcDisplay = document.getElementById('pc-display');
@@ -500,13 +441,13 @@
                 pcDisplay.classList.add('text-rose-600');
                 pcDisplay.classList.remove('text-slate-800');
                 // Chart shows max possible immunity vs gap
-                herdChartInstance.data.datasets[0].data = [100, 0];
+                herdChartInstance.data.datasets[0].data = [100, 0]; 
             } else {
                 warningEl.classList.add('hidden');
                 pcDisplay.innerText = (pc * 100).toFixed(1) + "%";
                 pcDisplay.classList.remove('text-rose-600');
                 pcDisplay.classList.add('text-slate-800');
-
+                
                 const pct = pc * 100;
                 herdChartInstance.data.datasets[0].data = [pct, 100 - pct];
             }
@@ -568,7 +509,7 @@
             // Parameters
             const beta = parseFloat(document.getElementById('beta-slider').value);
             const nu = parseFloat(document.getElementById('vacc-slider').value); // Vaccination Rate
-
+            
             // Display updates
             document.getElementById('beta-display').innerText = beta;
             document.getElementById('vacc-display').innerText = nu;
@@ -584,7 +525,7 @@
             let i = 0.01;
             let r = 0.0;
             let v = 0.0;
-
+            
             let labels = [];
             let sData = [];
             let iData = [];
@@ -597,7 +538,7 @@
                 // dV = nu*S - mu*V
                 // dI = beta*S*I - gamma*I - mu*I
                 // dR = gamma*I - mu*R
-
+                
                 // Note: mu*N = mu * 1 = mu
                 let dS = mu - (beta * s * i) - (nu * s) - (mu * s);
                 let dV = (nu * s) - (mu * v);
@@ -632,9 +573,9 @@
             // Solve q = exp(-lambda * (1 - q))
             // Fixed point iteration
             if (lambda <= 1) return 1.0;
-
+            
             let q = 0.5; // Initial guess
-            for (let i = 0; i < 100; i++) {
+            for(let i=0; i<100; i++) {
                 let next_q = Math.exp(-lambda * (1 - q));
                 if (Math.abs(next_q - q) < 0.0001) return next_q;
                 q = next_q;
@@ -661,13 +602,13 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: {
+                        x: { 
                             title: { display: true, text: 'Vaccination Coverage (p)' },
                             type: 'linear',
                             min: 0,
                             max: 1
                         },
-                        y: {
+                        y: { 
                             title: { display: true, text: 'Extinction Probability' },
                             min: 0,
                             max: 1.05
@@ -688,12 +629,12 @@
 
         function updateStochastic() {
             const r0 = parseFloat(document.getElementById('stoch-r0').value);
-
+            
             let dataPoints = [];
             for (let p = 0; p <= 1.0; p += 0.02) {
                 let lambda = (1 - p) * r0;
                 let q = solveExtinction(lambda);
-                dataPoints.push({ x: p, y: q });
+                dataPoints.push({x: p, y: q});
             }
 
             stochChartInstance.data.datasets[0].data = dataPoints;
@@ -710,25 +651,25 @@
                     datasets: [
                         {
                             label: 'Baseline',
-                            data: [1, 1, 5, 5, 2],
+                            data: [1, 1, 5, 5, 2], 
                             borderColor: '#94a3b8',
                             backgroundColor: 'rgba(148, 163, 184, 0.2)',
                         },
                         {
                             label: 'Routine (Pre-Vax)',
-                            data: [5, 5, 3, 3, 5],
+                            data: [5, 5, 3, 3, 5], 
                             borderColor: '#10b981',
                             backgroundColor: 'rgba(16, 185, 129, 0.2)',
                         },
                         {
                             label: 'Reactive + NPI',
-                            data: [3, 3, 2, 2, 4],
+                            data: [3, 3, 2, 2, 4], 
                             borderColor: '#3b82f6',
                             backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         },
-                        {
+                         {
                             label: 'Targeted',
-                            data: [4, 4, 4, 1, 1],
+                            data: [4, 4, 4, 1, 1], 
                             borderColor: '#a855f7',
                             backgroundColor: 'rgba(168, 85, 247, 0.2)',
                         }
@@ -748,13 +689,13 @@
             });
         }
 
-        window.onload = function () {
+        window.onload = function() {
             // Initialize KaTeX
             renderMathInElement(document.body, {
                 delimiters: [
-                    { left: '$$', right: '$$', display: true },
-                    { left: '\\[', right: '\\]', display: true },
-                    { left: '\\(', right: '\\)', display: false }
+                    {left: '$$', right: '$$', display: true},
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
                 ]
             });
 
@@ -767,5 +708,4 @@
 
     </script>
 </body>
-
 </html>
