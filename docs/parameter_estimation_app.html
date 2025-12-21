@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STA 6222: Parameter Estimation</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- MathJax for Formula Rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            startup: {
+                typeset: false // We will manually typeset to handle tab switching
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid currentColor;
+            cursor: pointer;
+            margin-top: -6px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        
+        /* Prose-like styling for the guide */
+        .prose h1 { font-size: 1.875rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
+        .prose h2 { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin-top: 2rem; margin-bottom: 1rem; }
+        .prose h3 { font-size: 1.25rem; font-weight: 700; color: #334155; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .prose p { margin-bottom: 1rem; color: #475569; line-height: 1.6; }
+        .prose ul { list-style-type: none; padding-left: 0; margin-bottom: 1rem; }
+        .prose li { margin-bottom: 0.5rem; }
+        .prose code { background-color: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; color: #0f172a; }
+        .prose pre code { display: block; padding: 1rem; overflow-x: auto; }
+        .prose strong { color: #0f172a; font-weight: 600; }
+        .callout { background-color: #f1f5f9; border-left: 4px solid #3b82f6; padding: 1rem; margin: 1.5rem 0; border-radius: 0 0.5rem 0.5rem 0; }
+        .checklist-item { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .checklist-item i { color: #16a34a; margin-top: 0.25rem; flex-shrink: 0; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- NAVIGATION -->
+    <nav class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-medium pr-4 border-r border-slate-700">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Portal
+                    </a>
+                    <div class="font-bold text-xl tracking-tight text-blue-400">STA 6222</div>
+                </div>
+                <div class="flex space-x-1">
+                    <button onclick="switchTab('guide')" id="btn-guide" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 bg-slate-800 text-white">
+                        <i data-lucide="book" class="w-4 h-4"></i> Study Guide
+                    </button>
+                    <button onclick="switchTab('simulator')" id="btn-simulator" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="activity" class="w-4 h-4"></i> Lab Simulator
+                    </button>
+                    <button onclick="switchTab('quiz')" id="btn-quiz" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i data-lucide="calculator" class="w-4 h-4"></i> Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow p-4 md:p-8">
+        <div class="max-w-6xl mx-auto">
+            
+            <!-- TAB 1: STUDY GUIDE -->
+            <div id="tab-guide" class="tab-content active">
+                <div class="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-xl shadow-sm border border-slate-200 prose">
+                    <h1>Parameter Estimation & Model Fitting</h1>
+                    <div class="text-slate-500 mb-8 pb-8 border-b border-slate-100">
+                        Comprehensive "Ground Zero" Study Guide | STA 6222 | Dr. Moses Ndiritu
+                    </div>
+
+                    <h2>1. Why Parameter Estimation Matters</h2>
+                    <p>
+                        A transmission model is only as useful as its parameters. In real outbreaks, we do not know the true transmission rate, reporting fraction, or even the initial number of infectious individuals. Estimation links surveillance data to model-based decisions like forecasting, intervention planning, and uncertainty assessment.
+                    </p>
+                    <div class="bg-blue-50 border border-blue-100 p-4 rounded-lg mb-6">
+                        <h4 class="font-bold text-blue-800 mb-1">Key Idea</h4>
+                        <p class="text-blue-700 text-sm m-0">
+                            You are not fitting "the model" to data directly. You are fitting <strong>model predictions</strong> to <strong>noisy observations</strong> using an explicit <em>Observation Model</em> (how the data are generated).
+                        </p>
+                    </div>
+                    
+                    <h3>Process vs. Observation Model</h3>
+                    <p>It is crucial to distinguish between the biology and the data:</p>
+                    <ul class="space-y-2 mb-6">
+                        <li><strong>Process Model (Biology):</strong> The compartment states ($S, E, I, R$) that evolve via differential equations. This is the "hidden truth."</li>
+                        <li><strong>Observation Model (Data):</strong> The filtered, delayed, and incomplete view of those states (e.g., Reported Cases = 30% of True Infections).</li>
+                    </ul>
+
+                    <h3>Data Types & Issues</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <strong>Incidence</strong>
+                            <p class="text-sm text-slate-600 mt-1">New cases per time step (daily/weekly). Most common, but affected by reporting delays and case definitions.</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <strong>Prevalence</strong>
+                            <p class="text-sm text-slate-600 mt-1">Number currently infected at time $t$. Often hard to measure directly.</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <strong>Seroprevalence</strong>
+                            <p class="text-sm text-slate-600 mt-1">Cumulative exposure (antibodies). Useful for final size ($Z$) and under-ascertainment.</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <strong>Deaths / Hospitalisations</strong>
+                            <p class="text-sm text-slate-600 mt-1">Delayed signals, sometimes more reliable than case counts.</p>
+                        </div>
+                    </div>
+
+                    <h2>2. Understanding the Parameters</h2>
+                    <p>In ODE models, parameters are usually <strong>rates</strong> (events per time unit), not probabilities.</p>
+                    <ul class="space-y-4">
+                        <li class="bg-white border border-slate-200 p-4 rounded-lg">
+                            <strong>$\beta$ (Transmission Rate):</strong> The rate at which an infected individual generates new infections per unit time. 
+                            <br><span class="text-sm text-slate-500">Units: $time^{-1}$. Formula: $\beta = c \times p$ (contact rate $\times$ prob. of transmission).</span>
+                        </li>
+                        <li class="bg-white border border-slate-200 p-4 rounded-lg">
+                            <strong>$\gamma$ (Recovery Rate):</strong> The rate at which individuals leave the infectious class.
+                            <br><span class="text-sm text-slate-500">Units: $time^{-1}$. Relationship: $\gamma = 1 / D$, where $D$ is the mean infectious period.</span>
+                        </li>
+                        <li class="bg-white border border-slate-200 p-4 rounded-lg">
+                            <strong>$\sigma$ (Incubation Rate):</strong> The rate at which exposed individuals become infectious.
+                            <br><span class="text-sm text-slate-500">Units: $time^{-1}$. Relationship: $\sigma = 1 / L$, where $L$ is the mean latent period.</span>
+                        </li>
+                    </ul>
+
+                    <h2>3. Early Exponential Growth</h2>
+                    <p>When susceptibles are not yet depleted ($S \approx 1$) and behavior is stable, the epidemic grows exponentially:</p>
+                    <div class="text-center text-lg font-bold mb-6">$$I(t) \approx I_0 e^{rt}$$</div>
+                    
+                    <p>Here, $r$ is the <strong>observed growth rate</strong>. It represents the slope of the epidemic curve on a logarithmic scale.</p>
+
+                    <h3>Linking Growth Rate to Doubling Time</h3>
+                    <p class="mb-6 font-medium text-slate-800 text-center text-lg">
+                        $$T_d = \frac{\ln(2)}{r} \approx \frac{0.693}{r}$$
+                    </p>
+                    <p class="text-sm text-slate-600 italic">Practical Warning: Exponential growth is a short-window approximation. Once behavior changes, testing expands, or susceptibles are depleted, this approximation breaks.</p>
+
+                    <h2>4. Relating $r$ to $R_0$</h2>
+                    <p>We observe $r$ from data, but we need $R_0$ to understand severity. The link depends on the <strong>generation interval</strong>.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div class="border border-slate-200 p-5 rounded-lg">
+                            <h3 style="margin-top:0; color: #2563eb;">SIR Approximation</h3>
+                            <p class="text-sm text-slate-600 mb-2">Assumes <strong>no latent period</strong>. $r \approx \beta - \gamma$.</p>
+                            <div class="text-lg font-bold bg-slate-50 p-2 rounded text-center">
+                                $$R_0 = 1 + \frac{r}{\gamma}$$
+                            </div>
+                        </div>
+                        <div class="border border-slate-200 p-5 rounded-lg">
+                            <h3 style="margin-top:0; color: #9333ea;">SEIR Approximation</h3>
+                            <p class="text-sm text-slate-600 mb-2">Includes <strong>latent period</strong> ($1/\sigma$). Delays transmission.</p>
+                            <div class="text-lg font-bold bg-slate-50 p-2 rounded text-center">
+                                $$R_0 = (1 + \frac{r}{\sigma})(1 + \frac{r}{\gamma})$$
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Using the Generation Interval Distribution $w(t)$</h3>
+                    <p>In general, $R_0$ cannot be determined from $r$ alone without assumptions about the generation-interval distribution $w(t)$. A common relationship (Euler-Lotka type) is:</p>
+                    <div class="text-center text-lg font-bold mb-4">
+                        $$R_0 = \frac{1}{\int_{0}^{\infty} e^{-rt} w(t) dt}$$
+                    </div>
+                    <div class="callout">
+                        <strong>Interpretation:</strong> For the same observed growth $r$, a <em>shorter</em> generation interval implies a <em>smaller</em> $R_0$, while a <em>longer</em> generation interval implies a <em>larger</em> $R_0$.
+                    </div>
+
+                    <h2>5. Estimation Workflows</h2>
+                    
+                    <h3>A. Quick Estimation (GLM)</h3>
+                    <p>To estimate $r$ from early incidence counts, use a <strong>Poisson GLM</strong> ($log(\lambda_t) = a + rt$), not linear regression.</p>
+                    <ul class="list-disc pl-5 space-y-1 text-sm text-slate-700">
+                        <li><strong>Window Selection:</strong> Choose the period before major interventions, before strong testing expansion, and before obvious depletion of susceptibles. Document your choice.</li>
+                        <li><strong>Overdispersion:</strong> If Variance $\gg$ Mean, prefer <strong>Negative Binomial</strong> GLM to avoid false certainty (confidence intervals too narrow).</li>
+                    </ul>
+
+                    <h3>B. Full Trajectory Fitting (Likelihood-based)</h3>
+                    <p>Rather than fitting a single summary ($r$), you can fit the full model trajectory to data.</p>
+                    <ol class="list-decimal pl-5 space-y-2 text-sm text-slate-700 font-medium">
+                        <li><strong>Choose Process Model:</strong> (e.g., SIR or SEIR) with parameters $\theta$.</li>
+                        <li><strong>Solve Numerically:</strong> Generate model states over time ($S(t), I(t)$).</li>
+                        <li><strong>Link to Observation:</strong> Define likelihood linking states to observed data (Poisson/NB counts, reporting fraction, delay).</li>
+                        <li><strong>Estimate:</strong> Maximize likelihood (MLE) or use Bayesian inference (posterior) to find best $\theta$.</li>
+                        <li><strong>Validate:</strong> Check residuals, predictive checks, and sensitivity analysis.</li>
+                    </ol>
+                    <p class="text-sm text-slate-600 mt-2"><strong>Overdispersion Note:</strong> Real surveillance data are often more variable than Poisson. Negative Binomial likelihoods are common and usually more realistic.</p>
+
+
+                    <h3>C. Final Size Equation (SIR)</h3>
+                    <p>If you can estimate the final attack rate $Z$ (cumulative proportion infected) for a largely closed epidemic, the SIR final size equation links $Z$ to $R_0$:</p>
+                    <div class="bg-slate-50 p-3 rounded text-center font-serif text-lg text-slate-800 mb-4">
+                        $$Z = 1 - e^{-R_0 Z}$$
+                    </div>
+                    <p class="text-sm text-slate-600">Best for a single-wave epidemic with relatively stable parameters and reasonable measurement of cumulative infection (e.g., via serology).</p>
+
+                    <h2>6. Practical Pitfalls & Identifiability</h2>
+                    <p><strong>Identifiability:</strong> Can you distinguish between a high transmission rate and a high reporting rate? Reporting fraction and transmission can trade off (you can fit cases by changing either).</p>
+                    
+                    <ul class="space-y-3 mt-4">
+                        <li class="flex gap-3">
+                            <span class="text-red-500 font-bold">•</span>
+                            <span><strong>Initial Conditions:</strong> An incorrect $I_0$ can significantly bias estimates of $\beta$ and $R_0$.</span>
+                        </li>
+                         <li class="flex gap-3">
+                            <span class="text-red-500 font-bold">•</span>
+                            <span><strong>Delays:</strong> Incubation and reporting delays shift peaks and can mislead fitting if ignored.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-red-500 font-bold">•</span>
+                            <span><strong>Time-Varying Parameters:</strong> Interventions change parameters over time. A single constant $\beta$ may be wrong.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="text-red-500 font-bold">•</span>
+                            <span><strong>Heterogeneity:</strong> Spatial, age, or network heterogeneity means the "average" parameter might not represent the dynamics well.</span>
+                        </li>
+                    </ul>
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg mt-4">
+                         <strong>Good Practice:</strong> State your model, your observation process, your fitting method, and your assumptions. Then report uncertainty (confidence intervals or credible intervals).
+                    </div>
+
+
+                    <h2 class="border-t border-slate-200 pt-8 mt-8">Exam Checklist</h2>
+                    <div class="bg-green-50 border border-green-100 p-6 rounded-xl">
+                        <div class="checklist-item">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            <span>Can you define $\beta, \gamma, \sigma, R_0, r$, and doubling time $T_d$?</span>
+                        </div>
+                        <div class="checklist-item">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            <span>Can you explain why $R_0$ and $r$ are related but not identical?</span>
+                        </div>
+                        <div class="checklist-item">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            <span>Can you write a Poisson likelihood for incidence and explain when Negative Binomial is better?</span>
+                        </div>
+                        <div class="checklist-item">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            <span>Can you explain what <strong>identifiability</strong> means in plain language?</span>
+                        </div>
+                        <div class="checklist-item">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            <span>Can you interpret parameter estimates in public health terms (control levers and uncertainty)?</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TAB 2: LAB SIMULATOR -->
+            <div id="tab-simulator" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Controls -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-1 space-y-8">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <span class="p-1 bg-blue-100 rounded text-blue-600"><i data-lucide="activity" class="w-4 h-4"></i></span> 
+                                Input Parameters
+                            </h3>
+                            
+                            <!-- Doubling Time Slider -->
+                            <div class="mb-6">
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-sm font-medium text-slate-700">Doubling Time ($T_d$)</label>
+                                    <span id="val-td" class="text-sm font-bold text-blue-600 bg-blue-50 px-2 rounded">4 days</span>
+                                </div>
+                                <input type="range" id="input-td" min="1" max="10" step="0.1" value="4" class="w-full text-blue-600">
+                                <p class="text-xs text-slate-500 mt-1">Controls growth rate ($r$)</p>
+                            </div>
+
+                            <!-- Infectious Period Slider -->
+                            <div class="mb-6">
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-sm font-medium text-slate-700">Infectious Period ($1/\gamma$)</label>
+                                    <span id="val-inf" class="text-sm font-bold text-green-600 bg-green-50 px-2 rounded">5 days</span>
+                                </div>
+                                <input type="range" id="input-inf" min="1" max="14" step="0.5" value="5" class="w-full text-green-600">
+                            </div>
+
+                            <!-- Latent Period Slider -->
+                            <div class="mb-6">
+                                <div class="flex justify-between mb-2">
+                                    <label class="text-sm font-medium text-slate-700">Latent Period ($1/\sigma$)</label>
+                                    <span id="val-lat" class="text-sm font-bold text-purple-600 bg-purple-50 px-2 rounded">3 days</span>
+                                </div>
+                                <input type="range" id="input-lat" min="0" max="10" step="0.5" value="3" class="w-full text-purple-600">
+                            </div>
+                        </div>
+
+                        <div class="pt-6 border-t border-slate-100">
+                             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wide mb-4">Calculated Outputs</h3>
+                             <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-50 p-3 rounded border border-slate-100">
+                                    <div class="text-xs text-slate-500">Growth Rate ($r$)</div>
+                                    <div id="out-r" class="text-xl font-mono font-bold text-slate-800">--</div>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded border border-slate-100">
+                                    <div class="text-xs text-slate-500">SIR Beta ($\beta$)</div>
+                                    <div id="out-beta" class="text-xl font-mono font-bold text-slate-800">--</div>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualizer -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-slate-800">Dynamic Visualization</h3>
+                            <div class="flex bg-slate-100 p-1 rounded-lg">
+                                <button onclick="setChartMode('exponential')" id="btn-mode-exp" class="px-3 py-1 text-sm rounded-md transition-all bg-white shadow text-blue-600 font-medium">Early Phase</button>
+                                <button onclick="setChartMode('sir')" id="btn-mode-sir" class="px-3 py-1 text-sm rounded-md transition-all text-slate-500 hover:text-slate-700">Full SIR Curve</button>
+                            </div>
+                        </div>
+
+                        <div class="flex-grow flex items-center justify-center bg-slate-50 rounded-lg border border-slate-200 relative mb-6">
+                            <canvas id="sim-canvas" width="600" height="300" class="w-full h-full max-h-[300px]"></canvas>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-blue-50 border border-blue-100 p-4 rounded-lg">
+                                <div class="text-blue-800 font-bold mb-1">SIR Estimated $R_0$</div>
+                                <div id="out-r0-sir" class="text-3xl font-bold text-blue-600">--</div>
+                                <div class="text-xs text-blue-600 mt-1">Assuming NO Latent Period</div>
+                                <div class="text-xs text-blue-400 font-mono mt-1">$$1 + r/\gamma$$</div>
+                            </div>
+                            <div class="bg-purple-50 border border-purple-100 p-4 rounded-lg relative overflow-hidden">
+                                <div class="text-purple-800 font-bold mb-1">SEIR Estimated $R_0$</div>
+                                <div id="out-r0-seir" class="text-3xl font-bold text-purple-600">--</div>
+                                <div class="text-xs text-purple-600 mt-1">With <span id="txt-lat-days">3</span> day Latency</div>
+                                <div class="text-xs text-purple-400 font-mono mt-1">$$(1 + r/\sigma)(1 + r/\gamma)$$</div>
+                                <div id="badge-diff" class="hidden absolute top-2 right-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-bold">
+                                    +0% Higher
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-sm text-slate-500 italic">
+                            Notice: As you increase the Latent Period, the required $R_0$ to maintain the same Doubling Time increases significantly. The virus must be more transmissible to overcome the delay.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: QUIZ -->
+            <div id="tab-quiz" class="tab-content">
+                <div class="max-w-2xl mx-auto space-y-8">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold text-slate-800">Self-Assessment Quiz</h2>
+                        <p class="text-slate-600">Test your understanding of parameter estimation logic.</p>
+                    </div>
+
+                    <div id="quiz-container" class="space-y-6">
+                        <!-- Questions injected by JS -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-100 border-t border-slate-200 py-6 text-center text-slate-500 text-sm">
+        <p>MSc Statistics (Medical Statistics Option) | 2025/2026</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- STATE & CONFIG ---
+        const state = {
+            activeTab: 'guide',
+            sim: {
+                td: 4,
+                inf: 5,
+                lat: 3,
+                mode: 'exponential' // or 'sir'
+            },
+            quiz: {
+                answered: {} // { qId: { correct: bool, text: string } }
+            }
+        };
+
+        const quizQuestions = [
+            {
+                id: 1,
+                q: "An outbreak doubles every 4 days. The infectious period is 5 days. What is the growth rate r?",
+                options: [
+                    { text: "0.173 per day", correct: true },
+                    { text: "0.250 per day", correct: false },
+                    { text: "0.693 per day", correct: false },
+                    { text: "0.138 per day", correct: false }
+                ],
+                hint: "$r = \\ln(2) / T_d$"
+            },
+            {
+                id: 2,
+                q: "Using the same data ($r=0.173$, Infectious=5 days), estimate $R_0$ using the simple SIR approximation.",
+                options: [
+                    { text: "1.50", correct: false },
+                    { text: "1.87", correct: true },
+                    { text: "2.14", correct: false },
+                    { text: "0.86", correct: false }
+                ],
+                hint: "SIR $R_0 = 1 + r/\\gamma$. $\\gamma$ is $1/5 = 0.2$."
+            },
+            {
+                id: 3,
+                q: "Now assume there is also a 3-day latent period. What happens to the estimated $R_0$?",
+                options: [
+                    { text: "It stays the same", correct: false },
+                    { text: "It decreases", correct: false },
+                    { text: "It increases to ~2.84", correct: true },
+                    { text: "It increases to ~4.50", correct: false }
+                ],
+                hint: "SEIR $R_0 = (1 + r/\\sigma)(1 + r/\\gamma)$. $\\sigma = 1/3$."
+            },
+            {
+                id: 4,
+                q: "Which fitting method should be used for the 'Early Phase' of an epidemic?",
+                options: [
+                    { text: "Linear Regression on raw counts", correct: false },
+                    { text: "Poisson GLM with Log Link", correct: true },
+                    { text: "Logistic Regression", correct: false },
+                    { text: "Final Size Equation", correct: false }
+                ],
+                hint: "Count data has variance > mean, and grows exponentially."
+            }
+        ];
+
+        // --- MATH FUNCTIONS ---
+        function solveSIR(beta, gamma, days, N=1) {
+            let S = 0.999 * N;
+            let I = 0.001 * N;
+            let R = 0;
+            const dt = 0.1;
+            const steps = days / dt;
+            const data = [];
+
+            for (let i = 0; i <= steps; i++) {
+                if (i % 10 === 0) data.push({ t: i * dt, I: I });
+                const dS = -beta * S * I / N;
+                const dI = (beta * S * I / N) - (gamma * I);
+                const dR = gamma * I;
+                
+                S += dS * dt;
+                I += dI * dt;
+                R += dR * dt;
+            }
+            return data;
+        }
+
+        function solveExponential(r, days, I0=0.001) {
+            const data = [];
+            for (let t = 0; t <= days; t+=1) {
+                data.push({ t: t, I: I0 * Math.exp(r * t) });
+            }
+            return data;
+        }
+
+        // --- DOM MANIPULATION ---
+
+        function switchTab(tabId) {
+            // Update State
+            state.activeTab = tabId;
+
+            // UI Update
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            // Button Styling
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-white');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add('bg-slate-800', 'text-white');
+
+            // Typeset Math
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise();
+            }
+
+            // If entering simulator, trigger render
+            if (tabId === 'simulator') {
+                updateSimulator();
+            }
+        }
+
+        function updateSimulator() {
+            // Get inputs
+            const td = parseFloat(document.getElementById('input-td').value);
+            const inf = parseFloat(document.getElementById('input-inf').value);
+            const lat = parseFloat(document.getElementById('input-lat').value);
+
+            // Update Labels
+            document.getElementById('val-td').textContent = `${td} days`;
+            document.getElementById('val-inf').textContent = `${inf} days`;
+            document.getElementById('val-lat').textContent = `${lat} days`;
+            document.getElementById('txt-lat-days').textContent = lat;
+
+            // Calculations
+            const r = Math.log(2) / td;
+            const gamma = 1 / inf;
+            const sigma = lat > 0 ? 1 / lat : 99999; // effectively infinity if lat is 0
+
+            const R0_SIR = 1 + (r / gamma);
+            const R0_SEIR = (1 + (r / sigma)) * (1 + (r / gamma));
+            const beta_SIR = r + gamma;
+
+            // Update Outputs
+            document.getElementById('out-r').textContent = r.toFixed(3);
+            document.getElementById('out-beta').textContent = beta_SIR.toFixed(3);
+            document.getElementById('out-r0-sir').textContent = R0_SIR.toFixed(2);
+            document.getElementById('out-r0-seir').textContent = R0_SEIR.toFixed(2);
+
+            // Update Badge
+            const badge = document.getElementById('badge-diff');
+            if (lat > 0) {
+                const diff = ((R0_SEIR - R0_SIR) / R0_SIR) * 100;
+                badge.textContent = `+${diff.toFixed(0)}% Higher`;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            // Draw Chart
+            drawChart(r, beta_SIR, gamma);
+            
+            // Re-render math in outputs
+            if(window.MathJax && window.MathJax.typesetPromise) {
+                 // We don't want to re-typeset the whole page constantly on drag, 
+                 // but simple text updates don't need MathJax unless they contain $ symbols.
+                 // Our numbers are plain text, so no action needed here.
+            }
+        }
+
+        function setChartMode(mode) {
+            state.sim.mode = mode;
+            // Update buttons
+            const btnExp = document.getElementById('btn-mode-exp');
+            const btnSir = document.getElementById('btn-mode-sir');
+            
+            const activeClass = "bg-white shadow text-blue-600 font-medium";
+            const inactiveClass = "text-slate-500 hover:text-slate-700";
+
+            if (mode === 'exponential') {
+                btnExp.className = `px-3 py-1 text-sm rounded-md transition-all ${activeClass}`;
+                btnSir.className = `px-3 py-1 text-sm rounded-md transition-all ${inactiveClass}`;
+            } else {
+                btnExp.className = `px-3 py-1 text-sm rounded-md transition-all ${inactiveClass}`;
+                btnSir.className = `px-3 py-1 text-sm rounded-md transition-all ${activeClass}`;
+            }
+            updateSimulator();
+        }
+
+        function drawChart(r, beta, gamma) {
+            const canvas = document.getElementById('sim-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Data Generation
+            let data, xMax, yMax;
+            if (state.sim.mode === 'exponential') {
+                xMax = 30;
+                data = solveExponential(r, xMax);
+                yMax = Math.max(0.1, ...data.map(d => d.I)); // Dynamic scale
+            } else {
+                xMax = 60;
+                data = solveSIR(beta, gamma, xMax);
+                yMax = 0.4; // Fixed scale for SIR
+            }
+
+            // Plot setup
+            const margin = 40;
+            const plotW = width - margin * 2;
+            const plotH = height - margin * 2;
+            
+            const xScale = plotW / xMax;
+            const yScale = plotH / yMax;
+
+            // Draw Axes
+            ctx.beginPath();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1;
+            ctx.moveTo(margin, margin);
+            ctx.lineTo(margin, height - margin);
+            ctx.lineTo(width - margin, height - margin);
+            ctx.stroke();
+
+            // Draw Curve
+            ctx.beginPath();
+            ctx.strokeStyle = state.sim.mode === 'exponential' ? '#2563eb' : '#dc2626';
+            ctx.lineWidth = 3;
+
+            data.forEach((point, i) => {
+                const x = margin + point.t * xScale;
+                const val = point.I;
+                // Clamp y to plot area
+                let y = (height - margin) - (val * yScale);
+                if (y < margin) y = margin; // Don't draw above top margin
+
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#475569';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('0', margin, height - margin + 20);
+            ctx.fillText(`${xMax} days`, width - margin, height - margin + 20);
+            
+            ctx.save();
+            ctx.translate(15, height/2);
+            ctx.rotate(-Math.PI/2);
+            ctx.fillText('Prevalence I(t)', 0, 0);
+            ctx.restore();
+        }
+
+        // --- QUIZ LOGIC ---
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            quizQuestions.forEach((q, idx) => {
+                const answeredData = state.quiz.answered[q.id];
+                const isAnswered = !!answeredData;
+                
+                // Question Card
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden";
+                
+                // Header
+                card.innerHTML = `
+                    <div class="p-6 border-b border-slate-100 bg-slate-50">
+                        <h3 class="text-lg font-semibold text-slate-800"><span class="text-slate-400 mr-2">Q${idx+1}.</span> ${q.q}</h3>
+                    </div>
+                `;
+
+                // Options Container
+                const optsDiv = document.createElement('div');
+                optsDiv.className = "p-6 space-y-3";
+
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    let btnClass = "w-full text-left p-4 rounded-lg border-2 transition-all duration-200 flex justify-between items-center ";
+                    
+                    if (isAnswered) {
+                        const isSelected = answeredData.text === opt.text;
+                        if (opt.correct) {
+                            btnClass += "border-green-500 bg-green-50 text-green-800";
+                            btn.innerHTML = `<span class="font-medium">${opt.text}</span><i data-lucide="check-circle" class="text-green-600 w-5 h-5"></i>`;
+                        } else if (isSelected) {
+                            btnClass += "border-red-300 bg-red-50 text-red-800";
+                            btn.innerHTML = `<span class="font-medium">${opt.text}</span><i data-lucide="x-circle" class="text-red-500 w-5 h-5"></i>`;
+                        } else {
+                            btnClass += "border-slate-100 text-slate-400 opacity-50";
+                            btn.innerHTML = `<span class="font-medium">${opt.text}</span>`;
+                        }
+                        btn.disabled = true;
+                    } else {
+                        btnClass += "border-slate-100 hover:border-blue-200 hover:bg-blue-50 text-slate-600";
+                        btn.innerHTML = `<span class="font-medium">${opt.text}</span>`;
+                        btn.onclick = () => handleAnswer(q.id, opt.correct, opt.text);
+                    }
+                    
+                    btn.className = btnClass;
+                    optsDiv.appendChild(btn);
+                });
+
+                card.appendChild(optsDiv);
+
+                // Feedback
+                if (isAnswered) {
+                    const feedback = document.createElement('div');
+                    feedback.className = `px-6 py-4 ${answeredData.correct ? 'bg-green-100 text-green-800' : 'bg-blue-50 text-blue-800'}`;
+                    feedback.innerHTML = `
+                        <p class="text-sm font-medium">
+                            ${answeredData.correct ? "Correct!" : "Not quite."} <span class="font-normal opacity-90">${q.hint}</span>
+                        </p>
+                    `;
+                    card.appendChild(feedback);
+                }
+
+                container.appendChild(card);
+            });
+            
+            lucide.createIcons();
+            if (window.MathJax && window.MathJax.typesetPromise) window.MathJax.typesetPromise();
+        }
+
+        function handleAnswer(qId, isCorrect, text) {
+            state.quiz.answered[qId] = { correct: isCorrect, text: text };
+            renderQuiz();
+        }
+
+        // --- INIT ---
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            // Simulator Inputs
+            ['input-td', 'input-inf', 'input-lat'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateSimulator);
+            });
+
+            // Initial Render
+            renderQuiz();
+            
+            // We are already on 'guide' tab by default HTML structure, 
+            // but let's ensure MathJax runs on load.
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                 window.MathJax.typesetPromise();
+            }
+        });
+
+    </script>
+</body>
+</html>
