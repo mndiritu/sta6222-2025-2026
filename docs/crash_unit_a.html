@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STA 6222: Crash Unit A - Interactive Module</title>
+    <!-- MathJax for Equations -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Chart.js for Simulation -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #003366; /* Nairobi Uni Blue-ish */
+            --secondary: #f0f0f0;
+            --accent: #d4af37;
+            --text: #333;
+            --light-text: #666;
+            --success: #28a745;
+            --error: #dc3545;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            background-color: #f9f9f9;
+        }
+
+        /* Navigation */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 { margin: 0; font-size: 1.5rem; }
+        header .portal-link {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        header .portal-link:hover { background-color: rgba(255,255,255,0.2); }
+
+        nav {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+
+        nav button:hover {
+            background-color: #f8f9fa;
+        }
+
+        nav button.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* Content Containers */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1rem 2rem 1rem;
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .container.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Lab Styles */
+        .lab-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .lab-grid { grid-template-columns: 1fr; }
+            header { flex-direction: column; gap: 1rem; text-align: center; }
+            nav button { padding: 1rem 1rem; font-size: 0.9rem; }
+        }
+
+        .controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+
+        .control-group { margin-bottom: 1.5rem; }
+        .control-group label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
+        .slider-val { float: right; color: var(--primary); font-weight: bold; }
+        input[type=range] { width: 100%; cursor: pointer; }
+
+        .chart-box {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            /* Height auto to prevent Chart.js resizing loop */
+            height: auto; 
+            position: relative;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px; /* Constraint required for Chart.js */
+            width: 100%;
+        }
+
+        .model-select {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .model-btn {
+            padding: 0.6rem 1.2rem;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            border-radius: 20px;
+            margin: 0 0.5rem;
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.2s;
+        }
+        
+        .model-btn:hover { background: #dee2e6; }
+
+        .model-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Study Guide Styles */
+        .guide-section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .guide-section h2 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-top: 0; }
+        .guide-section h3 { color: #444; margin-top: 1.5rem; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        .guide-section h4 { color: #555; margin-top: 1.2rem; font-style: italic; }
+        
+        .key-concept {
+            background-color: #eef5fa;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .derivation-box {
+            background-color: #fff9e6;
+            border: 1px solid #ffeeba;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .derivation-box h4 { margin-top: 0; color: #856404; font-style: normal; font-weight: bold; }
+
+        .equation-step {
+            margin-bottom: 1.5rem;
+            padding-left: 1rem;
+            border-left: 3px solid #ddd;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: top; }
+        th { background-color: #f8f9fa; color: var(--primary); font-weight: 600; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* Specific notation styling */
+        .pronunciation { color: #888; font-size: 0.85em; font-family: monospace; display: block; margin-top: 4px; }
+
+        /* Quiz Styles */
+        .quiz-card {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            border-left: 5px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .quiz-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .quiz-card h3 { margin-top: 0; color: var(--primary); }
+        
+        .options label {
+            display: block;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .options label:hover { background: #e2e6ea; border-color: #adb5bd; }
+        
+        .options input[type="radio"] { margin-right: 10px; }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback.correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .feedback.incorrect { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        .btn-check {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-check:hover { background-color: #002244; }
+
+        footer {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--light-text);
+            font-size: 0.9rem;
+            background: #f1f1f1;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>Models for Disease Transmission (STA 6222)</h1>
+        <div style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">Crash Unit A: TB & Malaria Models</div>
+    </div>
+    <a href="index.html" class="portal-link">← Back to Portal</a>
+</header>
+
+<nav>
+    <button class="active" onclick="switchTab('lab')">Interactive Lab</button>
+    <button onclick="switchTab('guide')">Study Guide</button>
+    <button onclick="switchTab('quiz')">Problem Set Quiz</button>
+</nav>
+
+<!-- TAB 1: INTERACTIVE LAB -->
+<div id="lab" class="container active">
+    <div class="model-select">
+        <button class="model-btn active" onclick="setSimulation('tb')">TB Latency Model (S-L-I)</button>
+        <button class="model-btn" onclick="setSimulation('malaria')">Malaria Host-Vector</button>
+    </div>
+
+    <div class="lab-grid">
+        <div class="controls">
+            <h3>Parameters</h3>
+            
+            <!-- TB Controls -->
+            <div id="tb-controls">
+                <div class="control-group">
+                    <label>Transmission Rate (\(\beta\)) <span id="val-beta" class="slider-val">4</span></label>
+                    <input type="range" id="beta" min="0" max="10" step="0.1" value="4" oninput="updateChart()">
+                    <small>How fast it spreads (Contact × Prob.)</small>
+                </div>
+                <div class="control-group">
+                    <label>Progression Rate (\(\kappa\)) <span id="val-kappa" class="slider-val">0.5</span></label>
+                    <input type="range" id="kappa" min="0.01" max="2" step="0.01" value="0.5" oninput="updateChart()">
+                    <small>Latent \(\to\) Infectious speed (\(1/\text{duration}\))</small>
+                </div>
+                <div class="control-group">
+                    <label>Removal Rate (\(\gamma\)) <span id="val-gamma" class="slider-val">2</span></label>
+                    <input type="range" id="gamma" min="0.1" max="5" step="0.1" value="2" oninput="updateChart()">
+                    <small>Recovery/Treatment speed</small>
+                </div>
+                <div class="key-concept">
+                    <strong>Calculated \(R_0\):</strong> <span id="r0-display" style="font-size: 1.2rem; font-weight: bold;">1.00</span>
+                    <br><small>Threshold > 1 implies epidemic growth.</small>
+                    <hr style="border: 0; border-top: 1px solid #ccc; margin: 8px 0;">
+                    <small><em>Note: Assuming clearance \(\omega=0\) for this slider.</em></small>
+                </div>
+            </div>
+
+            <!-- Malaria Controls -->
+            <div id="malaria-controls" style="display:none;">
+                <div class="control-group">
+                    <label>Biting Rate (\(a\)) <span id="val-a" class="slider-val">0.3</span></label>
+                    <input type="range" id="a" min="0.01" max="1" step="0.01" value="0.3" oninput="updateChart()">
+                    <small>Bites per mosquito per day (Lower with ITNs)</small>
+                </div>
+                <div class="control-group">
+                    <label>Vector Density (\(m\)) <span id="val-m" class="slider-val">5</span></label>
+                    <input type="range" id="m" min="0" max="50" step="1" value="5" oninput="updateChart()">
+                    <small>Mosquitoes per human (Lower with Larval Control)</small>
+                </div>
+                 <div class="control-group">
+                    <label>Mosquito Mortality (\(\mu_v\)) <span id="val-mu" class="slider-val">0.1</span></label>
+                    <input type="range" id="mu" min="0.01" max="0.5" step="0.01" value="0.1" oninput="updateChart()">
+                    <small>Daily death rate (Higher with IRS)</small>
+                </div>
+                <div class="key-concept">
+                    <strong>Est. \(R_0\) (Proxy):</strong> <span id="malaria-r0-display" style="font-size: 1.2rem; font-weight: bold;">--</span>
+                    <br><small>Proportional to \(a^2 m / \mu_v\)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-box">
+            <div class="chart-container">
+                <canvas id="simChart"></canvas>
+            </div>
+            <div style="margin-top: 15px; font-size: 0.9rem; color: #666; text-align: center; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+                <span id="chart-desc">Simulating TB dynamics (S-L-I). Notice the delayed peak due to latency.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TAB 2: STUDY GUIDE -->
+<div id="guide" class="container">
+
+    <!-- New Notation Section -->
+    <div class="guide-section">
+        <h2>Notation & Quick Reference</h2>
+        <p>Mathematical modeling uses symbols as a shorthand. This dictionary will help you pronounce them correctly and understand what they mean physically.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Meaning</th>
+                    <th>Notes & Tips</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>\(t\)</strong></td>
+                    <td>Time<br><span class="pronunciation">"t"</span></td>
+                    <td>Usually in days (malaria) or years (TB).</td>
+                </tr>
+                <tr>
+                    <td><strong>\(dS/dt\)</strong></td>
+                    <td>Rate of change<br><span class="pronunciation">"dee S dee t"</span></td>
+                    <td>How fast the number of Susceptibles is changing right now.</td>
+                </tr>
+                <tr>
+                    <td><strong>\(\lambda(t)\)</strong></td>
+                    <td>Force of Infection<br><span class="pronunciation">"lambda of t"</span></td>
+                    <td>The hazard: probability a susceptible person gets infected <em>per unit time</em>.</td>
+                </tr>
+                <tr>
+                    <td><strong>\(\beta\)</strong></td>
+                    <td>Transmission Parameter<br><span class="pronunciation">"beta"</span></td>
+                    <td>Contact rate \(\times\) Probability of infection per contact.</td>
+                </tr>
+                <tr>
+                    <td><strong>\(\kappa\)</strong></td>
+                    <td>Progression Rate<br><span class="pronunciation">"kappa"</span></td>
+                    <td>Rate of moving from Latent \(\to\) Infectious. <br>Average latent time = \(1/\kappa\).</td>
+                </tr>
+                <tr>
+                    <td><strong>\(\gamma\)</strong></td>
+                    <td>Removal/Recovery Rate<br><span class="pronunciation">"gamma"</span></td>
+                    <td>Rate of leaving the infectious state. <br>Average infectious duration = \(1/\gamma\).</td>
+                </tr>
+                <tr>
+                    <td><strong>\(\mu_v\)</strong></td>
+                    <td>Mosquito Mortality<br><span class="pronunciation">"mu sub v"</span></td>
+                    <td>Rate at which mosquitoes die. <br>Average mosquito lifespan = \(1/\mu_v\).</td>
+                </tr>
+                <tr>
+                    <td><strong>\(a\)</strong></td>
+                    <td>Biting Rate<br><span class="pronunciation">"a"</span></td>
+                    <td>Number of bites per mosquito per day.</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="key-concept">
+            <strong>Pro Tip:</strong> When you see a rate parameter (like \(\gamma\) or \(\kappa\)), always think of its reciprocal (\(1/\gamma\)) as the "Average Duration" of that state.
+        </div>
+    </div>
+
+    <!-- Part 1: TB -->
+    <div class="guide-section">
+        <h2>Part 1: TB Models (Latency & Persistence)</h2>
+        <p>Tuberculosis modelling is distinct from the classic SIR model because of the long <strong>latent period</strong>. To understand it, we start with the "hazard" or risk of infection.</p>
+        
+        <h3>1.1 Step 1: The Force of Infection</h3>
+        <p>Before we write the model compartments, we must define the rate at which susceptible individuals become infected. This is called the <strong>Force of Infection</strong>, denoted by \(\lambda(t)\).</p>
+        <div style="background: #eef5fa; padding: 15px; border-radius: 6px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 1.5rem;">
+            $$\lambda(t) = \beta \frac{I(t)}{N}$$
+        </div>
+        <p>This means the risk to a susceptible person depends on the transmission parameter \(\beta\) and the prevalence of infectious people in the population (\(I/N\)).</p>
+
+        <h3>1.2 Step 2: Building the Model Progressively</h3>
+        <p>Now we can construct the S-L-I model one compartment at a time.</p>
+
+        <div style="background: #f4f4f4; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+            <div class="equation-step">
+                <h4>A. The Susceptibles (S)</h4>
+                <p>People leave the Susceptible class when they get infected. The rate of leaving is the Force of Infection (\(\lambda\)) multiplied by the number of Susceptibles.</p>
+                $$\frac{dS}{dt} = -\lambda S$$
+            </div>
+            
+            <div class="equation-step">
+                <h4>B. The Latent Reservoir (L)</h4>
+                <p>When people get infected, they don't get sick immediately. They enter the <strong>Latent</strong> compartment. They stay here until they "progress" to active disease at rate \(\kappa\).</p>
+                $$\frac{dL}{dt} = \underbrace{\lambda S}_{\text{Inflow from infection}} - \underbrace{\kappa L}_{\text{Outflow to active TB}}$$
+            </div>
+            
+            <div class="equation-step">
+                <h4>C. The Infectious Class (I)</h4>
+                <p>Finally, those who progress enter the <strong>Infectious</strong> class. They stay here until they are treated, recover, or die (at rate \(\gamma\)).</p>
+                $$\frac{dI}{dt} = \underbrace{\kappa L}_{\text{Inflow from latency}} - \underbrace{\gamma I}_{\text{Outflow to recovery}}$$
+            </div>
+        </div>
+
+        <h3>1.3 Understanding \(R_0\) for TB</h3>
+        <p>The formula for the Basic Reproduction Number in TB captures both the infectiousness and the probability of surviving latency:</p>
+        $$R_0 = \underbrace{\frac{\beta}{\gamma}}_{\text{Standard SIR part}} \cdot \underbrace{\frac{\kappa}{\kappa + \omega}}_{\text{Progression Probability}}$$
+
+        <div class="derivation-box">
+            <h4>Derivation Sketch (Why is it this formula?)</h4>
+            <ul>
+                <li><strong>Step 1 (The Competition in L):</strong> Once infected, a person is in the Latent state. They can either Progress (rate \(\kappa\)) or Die/Clear (rate \(\omega\)). The <em>probability</em> they progress is the rate of progression divided by the total rate of leaving L: \(\text{Prob} = \frac{\kappa}{\kappa+\omega}\).</li>
+                <li><strong>Step 2 (Infections while Active):</strong> If they do become Active, they generate \(\beta\) infections per year for \(1/\gamma\) years. Total = \(\beta/\gamma\).</li>
+                <li><strong>Step 3 (Combine):</strong> \(R_0\) is the expected infections from a new entry. Since only a <em>fraction</em> progress, we multiply: (Infections if Active) \(\times\) (Prob of becoming Active).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Part 2: Malaria -->
+    <div class="guide-section">
+        <h2>Part 2: Malaria Models (Host-Vector)</h2>
+        <p>Malaria models (Ross-Macdonald) are more complex because there is no human-to-human transmission. We have two distinct populations (Humans and Mosquitoes) linked by biting.</p>
+
+        <h3>2.1 Step 1: The Two Forces of Infection</h3>
+        <p>Because there are two populations, we need two separate Forces of Infection.</p>
+        <div style="background: #eef5fa; padding: 15px; border-radius: 6px; margin-bottom: 1.5rem;">
+            <p><strong>1. Force on Humans (\(\lambda_h\)):</strong> Rate a human gets infected. Depends on biting rate, vector density, and infected mosquitoes.</p>
+            $$\lambda_h = a b \frac{I_v}{N_h}$$
+            <p><strong>2. Force on Mosquitoes (\(\lambda_v\)):</strong> Rate a mosquito gets infected. Depends on biting rate and infected humans.</p>
+            $$\lambda_v = a c \frac{I_h}{N_h}$$
+        </div>
+
+        <h3>2.2 Step 2: Building the Model Progressively</h3>
+        
+        <div style="background: #f4f4f4; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+            <div class="equation-step">
+                <h4>A. Human Dynamics</h4>
+                <p>Humans get infected by mosquitoes and recover at rate \(\gamma_h\).</p>
+                $$\frac{dI_h}{dt} = \underbrace{\lambda_h S_h}_{\text{Infection from bites}} - \underbrace{\gamma_h I_h}_{\text{Recovery}}$$
+            </div>
+
+            <div class="equation-step">
+                <h4>B. Mosquito Dynamics</h4>
+                <p>Mosquitoes get infected by biting humans. However, they die at rate \(\mu_v\). This mortality is the most critical factor in malaria control.</p>
+                $$\frac{dI_v}{dt} = \underbrace{\lambda_v S_v}_{\text{Infection from humans}} - \underbrace{\mu_v I_v}_{\text{Death}}$$
+            </div>
+        </div>
+
+        <h3>2.3 The \(R_0\) Threshold</h3>
+        <div style="background: #f4f4f4; padding: 15px; border-radius: 6px; text-align: center;">
+            $$R_0 \propto \frac{m a^2}{\gamma_h \mu_v} e^{-\mu_v n}$$
+        </div>
+        
+        <div class="derivation-box">
+            <h4>Derivation Sketch (Why is \(a\) squared?)</h4>
+            <ul>
+                <li><strong>Cycle Part A (Human \(\to\) Mosquito):</strong> Depends on biting rate \(a\).</li>
+                <li><strong>Cycle Part B (Mosquito \(\to\) Human):</strong> Depends on biting rate \(a\) <em>again</em>.</li>
+                <li><strong>Result:</strong> Since the cycle involves biting twice, \(a \times a = a^2\). This means reducing bites (e.g., Bed Nets) has a <strong>quadratic</strong> (huge) impact on transmission.</li>
+                <li><strong>Survival Factor (\(e^{-\mu_v n}\)):</strong> A mosquito must survive the incubation period (\(n\)) to become dangerous. If mortality (\(\mu_v\)) is high, this term shrinks to near zero.</li>
+            </ul>
+        </div>
+        
+        <h3>2.4 Seasonality</h3>
+        <p>We model seasonality by making the biting rate \(a\) change with time, often using a sine wave:</p>
+        $$a(t) = a_0 [1 + \alpha \sin(\dots)]$$
+        <p><strong>Crucial Insight:</strong> Disease peaks often <em>lag</em> behind rainfall peaks. Rain \(\to\) Breeding (weeks) \(\to\) Bites \(\to\) Incubation \(\to\) Cases.</p>
+    </div>
+
+    <!-- Part 3: Data & Estimation -->
+    <div class="guide-section">
+        <h2>Part 3: Data & Estimation Strategies</h2>
+        <p>How do we find the values for these parameters in the real world? This is a critical skill for the exam.</p>
+        
+        <h3>3.1 Estimating TB Parameters</h3>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Data Source</th>
+                <th>Estimation Logic</th>
+            </tr>
+            <tr>
+                <td><strong>\(\tau\) (Treatment Init.)</strong></td>
+                <td>Routine Notifications + Treatment Registers</td>
+                <td>Calculate the average "Delay to Treatment" (Time from onset/diagnosis to treatment start). \(\tau \approx 1 / \text{Delay}\).</td>
+            </tr>
+            <tr>
+                <td><strong>\(\kappa\) (Progression)</strong></td>
+                <td>Cohort Studies (e.g., IGRA positive)</td>
+                <td>Follow a group of latently infected people over time and see how many develop active TB per year.</td>
+            </tr>
+        </table>
+
+        <h3>3.2 Estimating Malaria Parameters</h3>
+        <table>
+            <tr>
+                <th>Parameter</th>
+                <th>Data Source</th>
+                <th>Estimation Logic</th>
+            </tr>
+            <tr>
+                <td><strong>\(m\) (Vector Density)</strong></td>
+                <td>Entomological Surveys (Traps)</td>
+                <td>Count mosquitoes per household or per light-trap night. Convert this density to a "per human" ratio.</td>
+            </tr>
+            <tr>
+                <td><strong>\(\mu_v\) (Mosquito Death)</strong></td>
+                <td>Mark-Release-Recapture</td>
+                <td>Capture mosquitoes, mark them, release them, and recapture later to see how many survived. Or use "Parity Rates" (proportion of mosquitoes that have laid eggs).</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- TAB 3: QUIZ -->
+<div id="quiz" class="container">
+    <h2>Problem Set Self-Test</h2>
+    <p>Test your understanding of the material. These questions are based on the Crash Unit A Problem Set.</p>
+
+    <!-- Q1 -->
+    <div class="quiz-card" id="q1">
+        <h3>1. Calculating TB \(R_0\)</h3>
+        <p>Suppose \(\beta=4\), \(\gamma=2\), \(\kappa=0.5\), and clearance rate \(\omega=0.5\). What is the \(R_0\)?</p>
+        <div class="options">
+            <label><input type="radio" name="q1" value="incorrect"> 2.0</label>
+            <label><input type="radio" name="q1" value="correct"> 1.0</label>
+            <label><input type="radio" name="q1" value="incorrect"> 0.5</label>
+        </div>
+        <button class="btn-check" onclick="checkAnswer('q1', 'correct')">Check Answer</button>
+        <div class="feedback">
+            <strong>Explanation:</strong> Use the formula \(R_0 = \frac{\beta}{\gamma} \cdot \frac{\kappa}{\kappa+\omega}\).
+            First, \(\beta/\gamma = 4/2 = 2\). 
+            Second, the progression fraction is \(\frac{0.5}{0.5+0.5} = 0.5\).
+            So, \(R_0 = 2 \times 0.5 = 1.0\).
+        </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-card" id="q2">
+        <h3>2. Impact of ITNs (Bed Nets)</h3>
+        <p>Insecticide Treated Nets (ITNs) primarily reduce which parameter in the Malaria model?</p>
+        <div class="options">
+            <label><input type="radio" name="q2" value="correct"> Biting rate (\(a\))</label>
+            <label><input type="radio" name="q2" value="incorrect"> Human recovery rate (\(\gamma_h\))</label>
+            <label><input type="radio" name="q2" value="incorrect"> Incubation period (\(n\))</label>
+        </div>
+        <button class="btn-check" onclick="checkAnswer('q2', 'correct')">Check Answer</button>
+        <div class="feedback">
+            <strong>Explanation:</strong> ITNs provide a physical barrier, directly reducing the effective biting rate (\(a\)). Modern nets with insecticide also increase mosquito mortality (\(\mu_v\)), but the primary definition focuses on preventing bites.
+        </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-card" id="q3">
+        <h3>3. Seasonality & Lags</h3>
+        <p>If rainfall peaks in April, why might Malaria incidence peak in June?</p>
+        <div class="options">
+            <label><input type="radio" name="q3" value="incorrect"> Because humans travel more in June.</label>
+            <label><input type="radio" name="q3" value="correct"> Due to vector breeding time, incubation periods, and reporting delays.</label>
+            <label><input type="radio" name="q3" value="incorrect"> Because the biting rate \(a\) is inversely proportional to rainfall.</label>
+        </div>
+        <button class="btn-check" onclick="checkAnswer('q3', 'correct')">Check Answer</button>
+        <div class="feedback">
+            <strong>Explanation:</strong> The lag is biological. Rain fills puddles \(\to\) Larvae develop (weeks) \(\to\) Adult mosquitoes bite \(\to\) Parasite incubates inside mosquito (EIP) \(\to\) Mosquito infects human \(\to\) Human develops symptoms. This chain takes time.
+        </div>
+    </div>
+    
+     <!-- Q4 -->
+    <div class="quiz-card" id="q4">
+        <h3>4. TB Reinfection Dynamics</h3>
+        <p>In the extended model \(\frac{dL}{dt} = \lambda S - \kappa L + \rho \lambda L\), what does \(\rho > 0\) imply?</p>
+        <div class="options">
+            <label><input type="radio" name="q4" value="incorrect"> Latent individuals are fully immune.</label>
+            <label><input type="radio" name="q4" value="correct"> Latent individuals can be reinfected (partial immunity).</label>
+            <label><input type="radio" name="q4" value="incorrect"> Latent individuals progress faster to disease.</label>
+        </div>
+        <button class="btn-check" onclick="checkAnswer('q4', 'correct')">Check Answer</button>
+        <div class="feedback">
+            <strong>Explanation:</strong> \(\rho\) represents relative susceptibility. If \(\rho > 0\), people in the Latent compartment (\(L\)) can acquire new infections. This "recycles" them in the system, increasing persistence and making control harder.
+        </div>
+    </div>
+    
+    <!-- Q5 -->
+    <div class="quiz-card" id="q5">
+        <h3>5. Combined Intervention Effect</h3>
+        <p>If ITNs reduce biting (\(a\)) by 30% and IRS increases mosquito mortality (\(\mu_v\)) by 50%, roughly how much is \(R_0\) reduced? (Hint: See Q6 in Problem Set)</p>
+        <div class="options">
+            <label><input type="radio" name="q5" value="incorrect"> ~15% reduction</label>
+            <label><input type="radio" name="q5" value="correct"> ~43% reduction</label>
+            <label><input type="radio" name="q5" value="incorrect"> ~80% reduction</label>
+        </div>
+        <button class="btn-check" onclick="checkAnswer('q5', 'correct')">Check Answer</button>
+        <div class="feedback">
+            <strong>Explanation:</strong> 
+            1. ITNs: \(a \to 0.7a\). Since \(R_0 \propto a\) (linear approx for this Q, or squared in full model, but the problem set solution treated it as linear reduction to \(R_0\)), factor is 0.7.
+            2. IRS: \(\mu_v \to 1.5\mu_v\). Since \(R_0 \propto \frac{1}{\sqrt{\mu_v}}\), factor is \(1/\sqrt{1.5} \approx 0.816\).
+            3. Combined: \(0.7 \times 0.816 \approx 0.57\).
+            This is a 43% reduction (1 - 0.57).
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <p>University of Nairobi • Academic Year 2025/2026 • STA 6222</p>
+    <p style="font-size: 0.8rem; color: #999;">Interactive Module v1.0</p>
+</footer>
+
+<script>
+    // --- SIMULATION LOGIC ---
+    let currentModel = 'tb';
+    let myChart = null;
+
+    // Tab Switching Logic
+    function switchTab(tabId) {
+        document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+        // Find the button that called this function
+        const buttons = document.querySelectorAll('nav button');
+        if(tabId === 'lab') buttons[0].classList.add('active');
+        if(tabId === 'guide') buttons[1].classList.add('active');
+        if(tabId === 'quiz') buttons[2].classList.add('active');
+        
+        // Force chart resize if entering lab
+        if (tabId === 'lab' && myChart) {
+            myChart.resize();
+        }
+    }
+
+    // Model Selection Logic
+    function setSimulation(model) {
+        currentModel = model;
+        const btns = document.querySelectorAll('.model-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        
+        if (model === 'tb') {
+            btns[0].classList.add('active');
+            document.getElementById('tb-controls').style.display = 'block';
+            document.getElementById('malaria-controls').style.display = 'none';
+            document.getElementById('chart-desc').innerText = "Simulating TB dynamics (S-L-I) over 20 years. Notice the smooth curve and delay caused by the Latent (L) compartment.";
+        } else {
+            btns[1].classList.add('active');
+            document.getElementById('tb-controls').style.display = 'none';
+            document.getElementById('malaria-controls').style.display = 'block';
+            document.getElementById('chart-desc').innerText = "Simulating Malaria dynamics over 100 days. Notice how sensitive the system is to Biting Rate (a) and Mortality (mu).";
+        }
+        updateChart();
+    }
+
+    // TB Simulation Engine (Euler Integration)
+    function runTBSimulation(beta, kappa, gamma) {
+        let dt = 0.05; 
+        let years = 20; 
+        let steps = years / dt;
+        
+        // Initial conditions: 99% Susceptible, 1% Infectious
+        let S = 0.99;
+        let L = 0.00;
+        let I = 0.01;
+        
+        let dataS = [], dataL = [], dataI = [], labels = [];
+
+        for (let t = 0; t <= steps; t++) {
+            // Force of infection
+            let lambda = beta * I; 
+            
+            // Derivatives
+            let dS = -lambda * S;
+            let dL = lambda * S - kappa * L;
+            let dI = kappa * L - gamma * I;
+
+            // Update
+            S += dS * dt;
+            L += dL * dt;
+            I += dI * dt;
+
+            // Store data approx every 0.5 years
+            if (t % Math.floor(0.5/dt) === 0) {
+                dataS.push(S);
+                dataL.push(L);
+                dataI.push(I);
+                labels.push((t * dt).toFixed(1));
+            }
+        }
+        return { labels, datasets: [
+            { label: 'Susceptible', data: dataS, borderColor: '#28a745', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0 },
+            { label: 'Latent', data: dataL, borderColor: '#d4af37', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0 },
+            { label: 'Infectious', data: dataI, borderColor: '#dc3545', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0 }
+        ]};
+    }
+
+    // Malaria Simulation Engine
+    function runMalariaSimulation(a, m, mu_v) {
+        // Constants from Ross-Macdonald simplified
+        let b = 0.5; // prob mosquito -> human
+        let c = 0.5; // prob human -> mosquito
+        let gamma_h = 0.05; // human recovery (slow, ~20 days)
+        
+        let dt = 0.5; 
+        let days = 150; 
+        let steps = days / dt;
+        
+        // Initial conditions
+        let Ih = 0.01; // Human prevalence
+        let Iv = 0.00; // Mosquito prevalence
+        let Sh = 1 - Ih;
+        let Sv = 1 - Iv;
+
+        let dataIh = [], dataIv = [], labels = [];
+
+        for (let t = 0; t <= steps; t++) {
+            // Forces of infection
+            // Human force: bites * prob * infected_vectors
+            let lambda_h = a * b * Iv; // (usually m*a*b*Iv/Nh, simplified here)
+            
+            // Vector force: bites * prob * infected_humans
+            let lambda_v = a * c * Ih;
+
+            let dIh = lambda_h * Sh - gamma_h * Ih;
+            
+            // Vector dynamics: dIv/dt = lambda_v * Sv - mu_v * Iv
+            let dIv = lambda_v * Sv - mu_v * Iv;
+
+            Ih += dIh * dt;
+            Iv += dIv * dt;
+            
+            // Bounds check to prevent explosion
+            if(Ih < 0) Ih = 0; if(Ih > 1) Ih = 1;
+            if(Iv < 0) Iv = 0; if(Iv > 1) Iv = 1;
+            Sh = 1 - Ih;
+            Sv = 1 - Iv;
+
+            // Store data
+            if (t % Math.floor(2/dt) === 0) {
+                dataIh.push(Ih);
+                dataIv.push(Iv);
+                labels.push((t * dt).toFixed(0));
+            }
+        }
+
+        return { labels, datasets: [
+            { label: 'Infected Humans (Prevalence)', data: dataIh, borderColor: '#003366', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0 },
+            { label: 'Infected Vectors (Proportion)', data: dataIv, borderColor: '#dc3545', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], pointRadius: 0 }
+        ]};
+    }
+
+    // Chart Update Function
+    function updateChart() {
+        const ctx = document.getElementById('simChart').getContext('2d');
+        
+        let chartData;
+        let xTitle = 'Time';
+        
+        if (currentModel === 'tb') {
+            const beta = parseFloat(document.getElementById('beta').value);
+            const kappa = parseFloat(document.getElementById('kappa').value);
+            const gamma = parseFloat(document.getElementById('gamma').value);
+            
+            // Update Text Displays
+            document.getElementById('val-beta').innerText = beta;
+            document.getElementById('val-kappa').innerText = kappa;
+            document.getElementById('val-gamma').innerText = gamma;
+            
+            // R0 Calc
+            const r0 = (beta / gamma); // Simplified w=0
+            document.getElementById('r0-display').innerText = r0.toFixed(2);
+            document.getElementById('r0-display').style.color = r0 > 1 ? '#dc3545' : '#28a745';
+
+            chartData = runTBSimulation(beta, kappa, gamma);
+            xTitle = 'Time (Years)';
+
+        } else {
+            const a = parseFloat(document.getElementById('a').value);
+            const m = parseFloat(document.getElementById('m').value);
+            const mu = parseFloat(document.getElementById('mu').value);
+
+            document.getElementById('val-a').innerText = a;
+            document.getElementById('val-m').innerText = m;
+            document.getElementById('val-mu').innerText = mu;
+
+            // R0 Proxy Calculation for Malaria: m * a^2 / mu
+            const r0Proxy = (m * a * a) / mu; 
+            document.getElementById('malaria-r0-display').innerText = r0Proxy.toFixed(2);
+            document.getElementById('malaria-r0-display').style.color = r0Proxy > 1 ? '#dc3545' : '#28a745';
+
+            chartData = runMalariaSimulation(a, m, mu);
+            xTitle = 'Time (Days)';
+        }
+
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: chartData.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 0 }, // Performance optimization
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        max: 1.0, 
+                        title: { display: true, text: 'Proportion of Population' } 
+                    },
+                    x: { 
+                        title: { display: true, text: xTitle },
+                        ticks: { maxTicksLimit: 10 }
+                    }
+                }
+            }
+        });
+    }
+
+    // --- QUIZ LOGIC ---
+    function checkAnswer(qId, correctVal) {
+        const options = document.getElementsByName(qId);
+        let selected;
+        for (const opt of options) {
+            if (opt.checked) selected = opt.value;
+        }
+        
+        const card = document.getElementById(qId);
+        const feedback = card.querySelector('.feedback');
+        
+        if (!selected) {
+            // Shake animation if nothing selected
+            card.style.transform = "translateX(5px)";
+            setTimeout(() => card.style.transform = "translateX(0)", 100);
+            setTimeout(() => card.style.transform = "translateX(-5px)", 200);
+            setTimeout(() => card.style.transform = "translateX(0)", 300);
+            return;
+        }
+
+        feedback.style.display = 'block';
+        feedback.className = 'feedback'; // Reset classes
+
+        if (selected === 'correct') {
+            feedback.classList.add('correct');
+            feedback.innerHTML = "<strong>Correct!</strong> " + feedback.innerHTML.split('</strong>')[1] || feedback.innerHTML;
+        } else {
+            feedback.classList.add('incorrect');
+            const explanation = feedback.innerHTML.split('</strong>')[1] || feedback.innerHTML;
+            feedback.innerHTML = "<strong>Incorrect.</strong> " + explanation;
+        }
+    }
+
+    // Initialize Simulation on Load
+    window.onload = function() {
+        updateChart();
+    };
+
+</script>
+
+</body>
+</html>
