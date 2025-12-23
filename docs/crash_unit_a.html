@@ -56,6 +56,7 @@
             display: flex;
             justify-content: center;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
 
         nav button {
@@ -259,6 +260,46 @@
         }
         .btn-check:hover { background-color: #002244; }
 
+        /* Slides Tab Styles */
+        .slides-wrapper {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .download-box {
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            transition: all 0.3s;
+        }
+        .download-box:hover {
+            border-color: var(--primary);
+            background: #eef5fa;
+        }
+        .download-btn {
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        .download-btn:hover { background-color: #002244; }
+
+        .pdf-viewer {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 2rem;
+        }
+
         footer {
             text-align: center;
             padding: 3rem 1rem;
@@ -282,6 +323,7 @@
 <nav>
     <button class="active" onclick="switchTab('lab')">Interactive Lab</button>
     <button onclick="switchTab('guide')">Study Guide</button>
+    <button onclick="switchTab('slides')">Lecture Slides</button>
     <button onclick="switchTab('quiz')">Problem Set Quiz</button>
 </nav>
 
@@ -565,7 +607,47 @@
     </div>
 </div>
 
-<!-- TAB 3: QUIZ -->
+<!-- TAB 3: LECTURE SLIDES (NEW) -->
+<div id="slides" class="container">
+    <div class="slides-wrapper">
+        <h2>Lecture Materials: Weeks 9 & 10</h2>
+        <p>You can download the original PowerPoint Presentation below.</p>
+        
+        <!-- PPTX Download Section -->
+        <div class="download-box">
+            <h3 style="margin-top:0;">Lecture Slides (PowerPoint)</h3>
+            <p style="color:#666; font-size: 0.9rem;">Lecture_09_&_10_TB Models + Malaria Models.pptx</p>
+            <a href="Lecture_09_&_10_TB Models + Malaria Models.pptx" download class="download-btn">
+                Download .PPTX File
+            </a>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 3rem 0;">
+
+        <!-- PDF Embed Section -->
+        <div class="pdf-section">
+            <h3 style="color: var(--primary);">View Slides Directly</h3>
+            <div style="background: #eef5fa; padding: 1rem; border-radius: 4px; font-size: 0.9rem; margin-bottom: 1rem; text-align: left;">
+                <strong>Instruction for Lecturer:</strong> To enable direct viewing in this window, please:
+                <ol style="margin: 0.5rem 0 0 1.5rem;">
+                    <li>Open your PowerPoint presentation.</li>
+                    <li>Save it as a <strong>PDF</strong> named <code>Lecture_09_&_10_TB Models + Malaria Models.pdf</code>.</li>
+                    <li>Place that PDF in the same folder as this HTML file.</li>
+                </ol>
+            </div>
+            
+            <!-- The Viewer -->
+            <iframe 
+                src="Lecture_09_&_10_TB Models + Malaria Models.pdf" 
+                class="pdf-viewer" 
+                frameborder="0">
+                <p>It appears you don't have a PDF plugin for this browser. <a href="Lecture_09_&_10_TB Models + Malaria Models.pdf">Click here to download the PDF file.</a></p>
+            </iframe>
+        </div>
+    </div>
+</div>
+
+<!-- TAB 4: QUIZ -->
 <div id="quiz" class="container">
     <h2>Problem Set Self-Test</h2>
     <p>Test your understanding of the material. These questions are based on the Crash Unit A Problem Set.</p>
@@ -673,7 +755,8 @@
         const buttons = document.querySelectorAll('nav button');
         if(tabId === 'lab') buttons[0].classList.add('active');
         if(tabId === 'guide') buttons[1].classList.add('active');
-        if(tabId === 'quiz') buttons[2].classList.add('active');
+        if(tabId === 'slides') buttons[2].classList.add('active');
+        if(tabId === 'quiz') buttons[3].classList.add('active');
         
         // Force chart resize if entering lab
         if (tabId === 'lab' && myChart) {
